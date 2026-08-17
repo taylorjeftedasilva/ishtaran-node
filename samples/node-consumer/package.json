@@ -1,0 +1,9 @@
+{
+  "name": "ishtaran-node-consumer-sample",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@ishtaran/sdk": "file:ishtaran-sdk-1.0.0-SNAPSHOT.tgz"
+  }
+}

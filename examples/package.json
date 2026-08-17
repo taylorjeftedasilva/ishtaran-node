@@ -1,0 +1,13 @@
+{
+  "name": "ishtaran-node-examples",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@ishtaran/sdk": "file:.."
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "tsx": "^4.19.2"
+  }
+}

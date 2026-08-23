@@ -1,16 +1,19 @@
 # Ishtaran TypeScript/Node.js SDK
 
 Official TypeScript/Node.js SDK for the [Ishtaran API](https://ishtaran.com) — a programmable
-financial platform. Second implementation of the [Ishtaran Official SDK Program](../../SDK_CAPABILITY_SPEC.md)
+financial platform. Second implementation of the Ishtaran Official SDK Program
 (Java → **TypeScript** → Python → Go), 100% functional parity with the Java SDK (reference
-implementation).
+implementation). See also: [Java](https://github.com/taylorjeftedasilva/ishtaran-java) ·
+[Python](https://github.com/taylorjeftedasilva/ishtaran-python) ·
+[Go](https://github.com/taylorjeftedasilva/ishtaran-go).
 
 ## Two layers, same backend
 
 - **Easy Mode** — `client.receivePayment(...)`, `client.withdraw(...)`, `client.getBalance(...)`,
   `client.verifyWebhookSignature(...)`: fast composition, never duplicates business logic.
 - **Core API** — `client.accounts`, `client.transactions`, `client.withdrawals`, etc.: granular
-  access to the same 90 real API endpoints (see [`SDK_FEATURE_MATRIX.md`](../../SDK_FEATURE_MATRIX.md)).
+  access to the same real API endpoints (see the
+  [API Reference](https://ishtaran.com/docs/api/ishtaran-api) / [raw OpenAPI](https://ishtaran.com/openapi.json)).
 - **AccountHolders** — `client.accountHolders`: self-service for the financial holder's global
   identity (`DEC-032`) — `signUp`/`login`/`me`/`claimInvitation`/`signUpAndClaimInvitation`.
   Isolated session: never shares a token with `client.auth` (Member) nor with the
@@ -18,10 +21,15 @@ implementation).
 
 ## Installation
 
-Not yet published on npm (licensing decision pending). To consume locally:
+Not yet published on npm (licensing decision pending), but the source is public:
 
 ```bash
-cd sdks/typescript
+npm install github:taylorjeftedasilva/ishtaran-node
+```
+
+Or to build and consume locally:
+
+```bash
 npm install && npm run build && npm pack
 # in your project:
 npm install /path/to/ishtaran-sdk-1.0.0-SNAPSHOT.tgz
@@ -50,8 +58,9 @@ See [`GETTING_STARTED.md`](GETTING_STARTED.md) and [`examples/`](examples/).
 Every monetary field (`amount`, `estimatedNetworkFee`, `available`, etc.) is typed as `string` —
 never `number`. The real API sends money as `number(double)` in JSON; the native `JSON.parse`
 would already lose precision before the SDK could intervene, so all response parsing uses
-`lossless-json`, preserving the exact text of every number. See
-[`SDK_CAPABILITY_SPEC.md` §11.1](../../SDK_CAPABILITY_SPEC.md#111-dinheiro).
+`lossless-json`, preserving the exact text of every number. See the
+[API Reference](https://ishtaran.com/docs/api/ishtaran-api) for the real JSON shape of every
+monetary field.
 
 ## Documentation
 
@@ -70,5 +79,5 @@ would already lose precision before the SDK could intervene, so all response par
 | [FEATURES.md](FEATURES.md) | Capability coverage |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 
-Every behavior is derived from the real API, never invented — see
-[`SDK_CAPABILITY_SPEC.md`](../../SDK_CAPABILITY_SPEC.md).
+Every behavior is derived from the real API, never invented — see the
+[Documentation](https://ishtaran.com/docs/intro) and [API Reference](https://ishtaran.com/docs/api/ishtaran-api).

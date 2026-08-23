@@ -2,7 +2,7 @@
   "name": "@ishtaran/sdk",
   "version": "1.0.0-SNAPSHOT",
   "description": "Official TypeScript/Node.js SDK for the Ishtaran programmable financial platform API.",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "type": "module",
   "engines": {
     "node": ">=18"
@@ -42,7 +42,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ishtaran/ishtaran-node.git"
+    "url": "https://github.com/taylorjeftedasilva/ishtaran-node.git"
   },
   "homepage": "https://ishtaran.com"
 }

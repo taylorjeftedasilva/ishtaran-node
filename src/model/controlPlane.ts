@@ -22,6 +22,9 @@ export interface SignUpResponse {
   organizationId: string;
   memberId: string;
   token: TokenResult;
+  applicationId: string;
+  environmentId: string;
+  apiKeyPlainText: string | null;
 }
 
 export function mapSignUpResponse(raw: unknown): SignUpResponse {
@@ -29,6 +32,9 @@ export function mapSignUpResponse(raw: unknown): SignUpResponse {
     organizationId: stringFieldOrNull(raw, 'organizationId')!,
     memberId: stringFieldOrNull(raw, 'memberId')!,
     token: mapTokenResult(field(raw, 'token')),
+    applicationId: stringFieldOrNull(raw, 'applicationId')!,
+    environmentId: stringFieldOrNull(raw, 'environmentId')!,
+    apiKeyPlainText: stringFieldOrNull(raw, 'apiKeyPlainText'),
   };
 }
 

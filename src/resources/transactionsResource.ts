@@ -69,7 +69,7 @@ export class TransactionsResource extends ResourceSupport {
     return this.executeNoContent(postRequest(`/v1/transactions/${transactionId}/unfreeze`, undefined, false));
   }
 
-  /** Polling seguro, nunca infinito — termina em Settled/Refunded/Cancelled. */
+  /** Safe polling, never infinite -- ends at Settled/Refunded/Cancelled. */
   waitFor(transactionId: string, timeoutMs: number, pollIntervalMs: number): Promise<TransactionResponse> {
     return pollUntil(
       () => this.get(transactionId),

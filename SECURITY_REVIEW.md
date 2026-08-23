@@ -1,48 +1,48 @@
 # SECURITY_REVIEW.md — Ishtaran TypeScript/Node.js SDK
 
-Checklist do §57 do brief do SDK Program. Mesma disciplina do Java: cada item com evidência real
-(teste ou leitura de código), nunca assumido.
+Checklist from §57 of the SDK Program brief. Same discipline as Java: every item backed by real
+evidence (test or code reading), never assumed.
 
-| # | Item | Status | Evidência |
+| # | Item | Status | Evidence |
 |---|---|---|---|
-| 1 | Secrets nunca logados | ✅ PASS | `loggingTransport.test.ts` — `redactedHeaders` nunca expõe API Key/Authorization em texto puro |
-| 2 | API Key nunca na URL/querystring | ✅ PASS | `AuthenticatingTransport` só anexa via header; nenhum resource constrói URL com a chave |
-| 3 | TLS verificado por padrão | ✅ PASS | `fetch` nativo do Node verifica certificado por padrão; nenhum switch de desabilitar exposto por este SDK |
-| 4 | Comparação de assinatura de webhook em tempo constante | ✅ PASS | `node:crypto.timingSafeEqual` real (não `===`) — `webhookSignatureVerifier.test.ts` (7 testes, incluindo vetor calculado independentemente via `node:crypto` direto e via Python/hmac na versão Java) |
-| 5 | Retries seguros (nunca cegos em mutação não-idempotente) | ✅ PASS | `retryingTransport.test.ts` — nunca retry em 400/401/403/404/409/422; 5xx só com idempotência/GET |
-| 6 | Timeout obrigatório, nunca infinito | ✅ PASS | `AbortSignal.timeout(requestTimeoutMs)` sempre aplicado; defaults finitos (`clientConfig.test.ts`) |
-| 7 | Redação central em logging opt-in | ✅ PASS | `LoggingTransport` nunca loga corpo bruto, só método/path/status/duração |
-| 8 | Dependências mínimas, escaneadas | ✅ PASS | 1 dependência de produção (`lossless-json`, madura/popular). `npm audit` roda 0 vulnerabilidades na árvore de produção; 1 vulnerabilidade `low` restante é exclusivamente dev (`esbuild`, usado só pelo bundler `tsup`, nunca embarcado no pacote publicado) |
-| 9 | Dinheiro nunca perde precisão | ✅ PASS | `json.test.ts` — `lossless-json` preserva o texto exato do número; teste explícito confirmando que `JSON.parse` nativo TERIA perdido essa precisão (prova que o problema é real, não hipotético) |
-| 10 | Resposta maliciosa/malformada nunca derruba o client | ✅ PASS | `errorMapper.test.ts` — corpo malformado nunca lança erro de parsing; enums desconhecidos nunca lançam (`enums.test.ts`) |
-| 11 | Corpo de resposta com tamanho ilimitado | ⚠️ **LIMITAÇÃO REAL, NÃO CORRIGIDA** | `fetch`/`response.text()` buferiza a resposta inteira em memória sem limite configurável nesta versão. Mesma limitação documentada no SDK Java — ver "Limitações conhecidas" |
-| 12 | Desserialização segura | ✅ PASS | `lossless-json`/`JSON.parse` nunca fazem desserialização polimórfica/reflection-based — sempre produzem dados estruturais simples, mapeados manualmente para tipos conhecidos |
-| 13 | URL controlada pelo usuário / SSRF | ✅ PASS | `baseUrl` sempre explícito e fixado na construção do client — nenhum método de negócio aceita override de URL (verificado: nenhum método em `resources/*.ts` recebe parâmetro de URL) |
-| 14 | Comportamento de redirecionamento HTTP | ✅ PASS (corrigido nesta revisão) | `FetchHttpTransport` usa `redirect: 'manual'` e trata qualquer 3xx como `NetworkError` — nunca segue automaticamente, agora com paridade real com o `Redirect.NEVER` do Java. Ver "Achado corrigido" abaixo |
-| 15 | Injeção de header | ✅ PASS | `fetch` nativo valida nomes/valores de header (rejeita CR/LF) — nunca construído por concatenação de string crua |
-| 16 | Injeção de query string | ✅ PASS | Todo valor de query string livre (não-enum) passa por `URLSearchParams`, que URL-encoda automaticamente — `webhookEndpointsResource.test.ts` confirma que `eventType` com `&`/`=` embutidos nunca injeta um parâmetro extra. **Melhor postura que o Java nesta versão** (o Java precisou de uma correção manual para o mesmo caso; TypeScript usa `URLSearchParams` desde o início, fechando essa classe de risco por construção) |
-| 17 | Comportamento de proxy | N/A | Não aplicável — nenhuma configuração de proxy customizada exposta; `fetch` usa o comportamento padrão do runtime |
+| 1 | Secrets never logged | ✅ PASS | `loggingTransport.test.ts` -- `redactedHeaders` never exposes API Key/Authorization in plain text |
+| 2 | API Key never in URL/querystring | ✅ PASS | `AuthenticatingTransport` only attaches it via header; no resource builds a URL with the key |
+| 3 | TLS verified by default | ✅ PASS | Node's native `fetch` verifies the certificate by default; no disable switch exposed by this SDK |
+| 4 | Constant-time webhook signature comparison | ✅ PASS | Real `node:crypto.timingSafeEqual` (not `===`) -- `webhookSignatureVerifier.test.ts` (7 tests, including a vector computed independently via `node:crypto` directly and via Python/hmac in the Java version) |
+| 5 | Safe retries (never blind on a non-idempotent mutation) | ✅ PASS | `retryingTransport.test.ts` -- never retries on 400/401/403/404/409/422; 5xx only with idempotency/GET |
+| 6 | Mandatory timeout, never infinite | ✅ PASS | `AbortSignal.timeout(requestTimeoutMs)` always applied; finite defaults (`clientConfig.test.ts`) |
+| 7 | Central redaction in opt-in logging | ✅ PASS | `LoggingTransport` never logs the raw body, only method/path/status/duration |
+| 8 | Minimal, scanned dependencies | ✅ PASS | 1 production dependency (`lossless-json`, mature/popular). `npm audit` reports 0 vulnerabilities in the production tree; the 1 remaining `low` vulnerability is dev-only (`esbuild`, used only by the `tsup` bundler, never shipped in the published package) |
+| 9 | Money never loses precision | ✅ PASS | `json.test.ts` -- `lossless-json` preserves the exact text of the number; explicit test confirming that native `JSON.parse` WOULD have lost that precision (proving the problem is real, not hypothetical) |
+| 10 | Malicious/malformed response never crashes the client | ✅ PASS | `errorMapper.test.ts` -- a malformed body never throws a parsing error; unknown enums never throw (`enums.test.ts`) |
+| 11 | Unbounded response body size | ⚠️ **REAL LIMITATION, NOT FIXED** | `fetch`/`response.text()` buffers the entire response in memory with no configurable limit in this version. Same limitation documented in the Java SDK -- see "Known limitations" |
+| 12 | Safe deserialization | ✅ PASS | `lossless-json`/`JSON.parse` never do polymorphic/reflection-based deserialization -- they always produce plain structural data, manually mapped to known types |
+| 13 | User-controlled URL / SSRF | ✅ PASS | `baseUrl` is always explicit and fixed at client construction -- no business method accepts a URL override (verified: no method in `resources/*.ts` takes a URL parameter) |
+| 14 | HTTP redirect behavior | ✅ PASS (fixed in this review) | `FetchHttpTransport` uses `redirect: 'manual'` and treats any 3xx as a `NetworkError` -- never follows automatically, now with real parity with Java's `Redirect.NEVER`. See "Finding fixed" below |
+| 15 | Header injection | ✅ PASS | Native `fetch` validates header names/values (rejects CR/LF) -- never built via raw string concatenation |
+| 16 | Query string injection | ✅ PASS | Every free-form (non-enum) query string value goes through `URLSearchParams`, which URL-encodes automatically -- `webhookEndpointsResource.test.ts` confirms an `eventType` with embedded `&`/`=` never injects an extra parameter. **Better posture than Java in this version** (Java needed a manual fix for the same case; TypeScript uses `URLSearchParams` from the start, closing this risk class by construction) |
+| 17 | Proxy behavior | N/A | Not applicable -- no custom proxy configuration exposed; `fetch` uses the runtime's default behavior |
 
-## Achado corrigido durante esta revisão
+## Finding fixed during this review
 
-**`fetch` nativo seguiria redirects HTTP automaticamente por padrão** (`redirect: 'follow'` é o
-default do WHATWG fetch) — diferente do `java.net.http.HttpClient` do SDK Java, que usa
-`Redirect.NEVER` por padrão. Um redirect 3xx malicioso vindo de um `baseUrl` comprometido teria
-sido seguido automaticamente. Corrigido nesta sessão: `FetchHttpTransport` agora usa
-`redirect: 'manual'` e trata qualquer 3xx como `NetworkError`, restaurando paridade real com o
-Java. Coberto por `fetchTransport.test.ts` (mock de `fetch` confirmando `redirect: 'manual'` é
-passado e que um 302 lança `NetworkError`).
+**Native `fetch` would follow HTTP redirects automatically by default** (`redirect: 'follow'` is
+the WHATWG fetch default) -- unlike the Java SDK's `java.net.http.HttpClient`, which defaults to
+`Redirect.NEVER`. A malicious 3xx redirect coming from a compromised `baseUrl` would have been
+followed automatically. Fixed in this session: `FetchHttpTransport` now uses
+`redirect: 'manual'` and treats any 3xx as a `NetworkError`, restoring real parity with Java.
+Covered by `fetchTransport.test.ts` (a mocked `fetch` confirming `redirect: 'manual'` is passed
+and that a 302 throws `NetworkError`).
 
-## Limitações conhecidas (documentadas, não escondidas)
+## Known limitations (documented, never hidden)
 
-1. **Corpo de resposta sem limite de tamanho** (item 11) — mesma limitação do SDK Java, mesma
-   justificativa (risco só existe se `baseUrl` apontar para um host comprometido).
-2. **`connectTimeoutMs` não imposto separadamente** de `requestTimeoutMs` (ver `CONFIGURATION.md`)
-   — não é um item de segurança per se, mas afeta a paridade de comportamento sob rede lenta/DoS
-   por conexão pendurada.
+1. **Unbounded response body size** (item 11) -- same limitation as the Java SDK, same
+   justification (the risk only exists if `baseUrl` points to a compromised host).
+2. **`connectTimeoutMs` not enforced separately** from `requestTimeoutMs` (see `CONFIGURATION.md`)
+   -- not a security item per se, but it affects behavioral parity under a slow network/DoS via
+   a hung connection.
 
-## Veredito
+## Verdict
 
-**PASS**, com 2 limitações documentadas explicitamente (nunca escondidas) — nenhum achado crítico
-ou de alta severidade permanece sem correção ou sem justificativa registrada; o único achado real
-de comportamento (redirects seguidos automaticamente) foi corrigido, não apenas anotado.
+**PASS**, with 2 explicitly documented limitations (never hidden) -- no critical or
+high-severity finding remains unfixed or unjustified; the one real behavioral finding
+(redirects followed automatically) was fixed, not just noted.

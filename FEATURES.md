@@ -1,11 +1,11 @@
 # Features
 
-Derivado de [`SDK_FEATURE_MATRIX.md`](../../SDK_FEATURE_MATRIX.md). Core API: 93/93 operações
-reais (16/16 módulos). Easy Mode: 100% (`payments.*`, `withdraw`, `getBalance`,
-`verifyWebhookSignature`). Cross-cutting: 100% (config, auth, erros, retry, idempotência,
-paginação, enums forward-compatible, segurança/redação, logging opt-in, waitFor seguro,
-empacotamento validado ESM+CJS).
+Derived from [`SDK_FEATURE_MATRIX.md`](../../SDK_FEATURE_MATRIX.md). Core API: 93/93 real
+operations (16/16 modules). Easy Mode: 100% (`payments.*`, `withdraw`, `getBalance`,
+`verifyWebhookSignature`). Cross-cutting: 100% (config, auth, errors, retry, idempotency,
+pagination, forward-compatible enums, security/redaction, opt-in logging, safe waitFor,
+validated ESM+CJS packaging).
 
-100% de paridade funcional com o Java (SDK de referência) — mesmos nomes de conceito de negócio,
-mesmos defaults, mesma política de retry/idempotência/timeout, diferindo só no idioma da linguagem
-(`client.withdrawals.quote(...)` vs. Java `client.withdrawals().quote(...)`).
+100% functional parity with the Java SDK (reference implementation) — same business-concept
+names, same defaults, same retry/idempotency/timeout policy, differing only in the language's
+idiom (`client.withdrawals.quote(...)` vs. Java `client.withdrawals().quote(...)`).

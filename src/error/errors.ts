@@ -1,15 +1,15 @@
 /**
- * Base de toda exceção lançada pelo SDK — ver SDK_CAPABILITY_SPEC.md §6.4. `httpStatus`/`code` são
- * indefinidos para {@link NetworkError}/{@link TimeoutError} (nenhuma resposta HTTP existiu);
- * `code`/`details` são sempre indefinidos para {@link AuthenticationError}/{@link AuthorizationError}
- * (401/403 nunca têm corpo — ver §6.3, Known Gap §12.1).
+ * Base of every exception thrown by the SDK -- see SDK_CAPABILITY_SPEC.md §6.4. `httpStatus`/`code`
+ * are undefined for {@link NetworkError}/{@link TimeoutError} (no HTTP response ever existed);
+ * `code`/`details` are always undefined for {@link AuthenticationError}/{@link AuthorizationError}
+ * (401/403 never have a body -- see §6.3, Known Gap §12.1).
  */
 export class IshtaranError extends Error {
   readonly httpStatus?: number;
   readonly code?: string;
   /**
-   * Sempre indefinido hoje — a API real não implementa nenhum mecanismo de request/correlation ID
-   * (busca exaustiva em src/CompositionRoot/, zero ocorrência — ver SDK_CAPABILITY_SPEC.md §12.1).
+   * Always undefined today -- the real API implements no request/correlation ID mechanism
+   * (an exhaustive search in src/CompositionRoot/ found zero occurrences -- see SDK_CAPABILITY_SPEC.md §12.1).
    */
   readonly requestId?: string;
   readonly details?: unknown;
@@ -29,14 +29,14 @@ export class IshtaranError extends Error {
   }
 }
 
-/** 401 — sem corpo JSON (ver SDK_CAPABILITY_SPEC.md §6.3). `code`/`details` são sempre indefinidos. */
+/** 401 -- no JSON body (see SDK_CAPABILITY_SPEC.md §6.3). `code`/`details` are always undefined. */
 export class AuthenticationError extends IshtaranError {
   constructor(message: string) {
     super(message, { httpStatus: 401, retryable: false });
   }
 }
 
-/** 403 — sem corpo JSON (ver SDK_CAPABILITY_SPEC.md §6.3). */
+/** 403 -- no JSON body (see SDK_CAPABILITY_SPEC.md §6.3). */
 export class AuthorizationError extends IshtaranError {
   constructor(message: string) {
     super(message, { httpStatus: 403, retryable: false });
@@ -44,8 +44,8 @@ export class AuthorizationError extends IshtaranError {
 }
 
 /**
- * 400, `code=VALIDATION_ERROR`. `message` carrega UMA string com todos os erros unidos por "; " —
- * a API real (FluentValidation) não expõe array por campo (ver SDK_CAPABILITY_SPEC.md §6.1/§12.2).
+ * 400, `code=VALIDATION_ERROR`. `message` carries ONE string with all errors joined by "; " --
+ * the real API (FluentValidation) doesn't expose a per-field array (see SDK_CAPABILITY_SPEC.md §6.1/§12.2).
  */
 export class ValidationError extends IshtaranError {
   constructor(message: string, requestId: string | undefined, details: unknown) {
@@ -60,7 +60,7 @@ export class NotFoundError extends IshtaranError {
   }
 }
 
-/** 409, qualquer `code` de conflito exceto IDEMPOTENCY_KEY_CONFLICT (ver {@link IdempotencyConflictError}). */
+/** 409, any conflict `code` except IDEMPOTENCY_KEY_CONFLICT (see {@link IdempotencyConflictError}). */
 export class ConflictError extends IshtaranError {
   constructor(message: string, code: string | undefined, requestId: string | undefined, details: unknown) {
     super(message, { httpStatus: 409, code, requestId, details, retryable: false });
@@ -68,8 +68,8 @@ export class ConflictError extends IshtaranError {
 }
 
 /**
- * 409, `code=IDEMPOTENCY_KEY_CONFLICT` — mesma chave reenviada com payload diferente do original
- * (ver SDK_CAPABILITY_SPEC.md §9). Subtipo de {@link ConflictError}.
+ * 409, `code=IDEMPOTENCY_KEY_CONFLICT` -- same key resent with a payload different from the
+ * original (see SDK_CAPABILITY_SPEC.md §9). Subtype of {@link ConflictError}.
  */
 export class IdempotencyConflictError extends ConflictError {
   constructor(message: string, requestId: string | undefined, details: unknown) {
@@ -77,7 +77,7 @@ export class IdempotencyConflictError extends ConflictError {
   }
 }
 
-/** 429, `code=RATE_LIMITED`. Sempre retryable — expõe `retryAfterSeconds` do header real. */
+/** 429, `code=RATE_LIMITED`. Always retryable -- exposes `retryAfterSeconds` from the real header. */
 export class RateLimitError extends IshtaranError {
   readonly retryAfterSeconds?: number;
 
@@ -87,7 +87,7 @@ export class RateLimitError extends IshtaranError {
   }
 }
 
-/** Falha de transporte — sem nenhuma resposta HTTP. Sempre retryable. */
+/** Transport failure -- no HTTP response at all. Always retryable. */
 export class NetworkError extends IshtaranError {
   constructor(message: string, cause?: unknown) {
     super(message, { retryable: true });
@@ -97,7 +97,7 @@ export class NetworkError extends IshtaranError {
   }
 }
 
-/** Connect ou request/read timeout excedido (ver SDK_CAPABILITY_SPEC.md §7), ou `waitFor` excedendo o prazo. Sempre retryable. */
+/** Connect or request/read timeout exceeded (see SDK_CAPABILITY_SPEC.md §7), or `waitFor` exceeding its deadline. Always retryable. */
 export class TimeoutError extends IshtaranError {
   constructor(message: string, cause?: unknown) {
     super(message, { retryable: true });
@@ -107,7 +107,7 @@ export class TimeoutError extends IshtaranError {
   }
 }
 
-/** Fallback — qualquer 4xx/5xx cujo `code` não é reconhecido. */
+/** Fallback -- any 4xx/5xx whose `code` isn't recognized. */
 export class ApiError extends IshtaranError {
   constructor(message: string, httpStatus: number, code: string | undefined, requestId: string | undefined, details: unknown, retryable: boolean) {
     super(message, { httpStatus, code, requestId, details, retryable });

@@ -1,22 +1,22 @@
 # Error Handling
 
-Todo erro é uma subclasse de `IshtaranError` (ver `SDK_CAPABILITY_SPEC.md` §6):
+Every error is a subclass of `IshtaranError` (see `SDK_CAPABILITY_SPEC.md` §6):
 
 ```
 IshtaranError
-├── AuthenticationError       (401 — sem code/detail)
-├── AuthorizationError        (403 — idem)
-├── ValidationError           (400, code=VALIDATION_ERROR — 1 string, nunca lista por campo)
+├── AuthenticationError       (401 -- no code/detail)
+├── AuthorizationError        (403 -- same)
+├── ValidationError           (400, code=VALIDATION_ERROR -- 1 string, never a per-field list)
 ├── NotFoundError             (404, code=NOT_FOUND)
-├── ConflictError             (409 — vários code)
-├── IdempotencyConflictError  (409, code=IDEMPOTENCY_KEY_CONFLICT — extends ConflictError)
-├── RateLimitError            (429, code=RATE_LIMITED — retryAfterSeconds)
-├── NetworkError              (falha de transporte)
-├── TimeoutError              (timeout de request, ou waitFor excedendo o prazo)
-└── ApiError                  (fallback — preserva status/code/detail brutos)
+├── ConflictError             (409 -- various codes)
+├── IdempotencyConflictError  (409, code=IDEMPOTENCY_KEY_CONFLICT -- extends ConflictError)
+├── RateLimitError            (429, code=RATE_LIMITED -- retryAfterSeconds)
+├── NetworkError              (transport failure)
+├── TimeoutError              (request timeout, or waitFor exceeding its deadline)
+└── ApiError                  (fallback -- preserves raw status/code/detail)
 ```
 
-## Uso
+## Usage
 
 ```typescript
 import { ValidationError, RateLimitError, IshtaranError } from '@ishtaran/sdk';
@@ -25,21 +25,22 @@ try {
   await client.withdrawals.request(orgId, accountId, destId, assetNetworkId, amount);
 } catch (error) {
   if (error instanceof ValidationError) {
-    console.warn('Validação falhou:', error.message);
+    console.warn('Validation failed:', error.message);
   } else if (error instanceof RateLimitError) {
     await new Promise((r) => setTimeout(r, (error.retryAfterSeconds ?? 1) * 1000));
   } else if (error instanceof IshtaranError) {
-    console.error(`Falha (${error.httpStatus}):`, error.message);
+    console.error(`Failed (${error.httpStatus}):`, error.message);
   }
 }
 ```
 
-## Campos disponíveis
+## Available fields
 
-`httpStatus`, `code` (chave estável, ex. `VALIDATION_ERROR`), `requestId` (sempre `undefined` hoje
-— API real não tem mecanismo de correlation ID, ver §12.1), `details` (corpo bruto), `retryable`.
+`httpStatus`, `code` (stable key, e.g. `VALIDATION_ERROR`), `requestId` (always `undefined`
+today — the real API has no correlation ID mechanism, see §12.1), `details` (raw body),
+`retryable`.
 
-## Por que 401/403 não têm `code`/`detail`
+## Why 401/403 have no `code`/`detail`
 
-Nenhum `AuthenticationHandler` do backend registra challenge customizado — o middleware de
-autenticação responde com corpo vazio antes de chegar no handler que produz `ProblemDetails`.
+No backend `AuthenticationHandler` registers a custom challenge — the authentication middleware
+responds with an empty body before reaching the handler that produces `ProblemDetails`.

@@ -11,8 +11,8 @@ import {
 import { EnumValue } from '../model/enumFactory.js';
 
 /**
- * Catálogo — `AssetNetworkCatalog` (6 rotas reais, só leitura no escopo do SDK). Sempre Member JWT
- * — não aceita API Key hoje (Known Gap real, ver SDK_CAPABILITY_SPEC.md §12.3).
+ * Catalog -- `AssetNetworkCatalog` (6 real routes, read-only within the SDK's scope). Always
+ * Member JWT -- doesn't accept an API Key today (a real Known Gap, see SDK_CAPABILITY_SPEC.md §12.3).
  */
 export class AssetNetworkCatalogResource extends ResourceSupport {
   constructor(transport: HttpTransport) {
@@ -36,8 +36,8 @@ export class AssetNetworkCatalogResource extends ResourceSupport {
   }
 
   /**
-   * `status` é enviado como inteiro bruto na query string, per o contrato documentado do OpenAPI
-   * real — mesmo a resposta devolvendo o status como string (Grupo A).
+   * `status` is sent as a raw integer in the query string, per the real documented OpenAPI
+   * contract -- even though the response returns status as a string (Group A).
    */
   listAssetNetworks(status?: EnumValue<string>): Promise<AssetNetworkResponse[]> {
     const path = status ? `/v1/asset-networks?status=${this.toRequestRawValue(status)}` : '/v1/asset-networks';
@@ -57,7 +57,7 @@ export class AssetNetworkCatalogResource extends ResourceSupport {
       case 'DISABLED':
         return 3;
       default:
-        throw new Error(`Valor de AssetNetworkStatus desconhecido para filtro: ${status.name}`);
+        throw new Error(`Unknown AssetNetworkStatus value for filter: ${status.name}`);
     }
   }
 }

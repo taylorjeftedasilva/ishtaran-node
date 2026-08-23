@@ -12,7 +12,7 @@ export class EnvironmentsResource extends ResourceSupport {
     return this.executeList(getRequest(`/v1/environments/${environmentId}/api-keys`), mapApiKeyMetadataResponse);
   }
 
-  /** `plainTextKey` só aparece nesta resposta — nunca recuperável depois. */
+  /** `plainTextKey` only ever appears in this response -- never retrievable later. */
   generateApiKey(environmentId: string): Promise<GenerateApiKeyResult> {
     return this.execute(postRequest(`/v1/environments/${environmentId}/api-keys`, '{}', false), mapGenerateApiKeyResult);
   }

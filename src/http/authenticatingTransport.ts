@@ -4,8 +4,8 @@ import { BearerTokenHolder } from '../auth/bearerTokenHolder.js';
 const API_KEY_HEADER = 'X-Api-Key';
 
 /**
- * Anexa `X-Api-Key` (quando configurado) e/ou `Authorization: Bearer` (quando um login de Member
- * já ocorreu nesta instância de client) — nunca os dois disfarçados um do outro (regra do brief).
+ * Attaches `X-Api-Key` (when configured) and/or `Authorization: Bearer` (once a Member login has
+ * happened on this client instance) -- never one masquerading as the other (a brief rule).
  */
 export class AuthenticatingTransport implements HttpTransport {
   constructor(

@@ -16,7 +16,7 @@ import {
   mapWorkflowVersionResponse,
 } from '../model/workflow.js';
 
-/** Data Plane — `WorkflowRules` (7 rotas de Workflow/Version/Rule; Events/EventTypes em recursos próprios). */
+/** Data Plane -- `WorkflowRules` (7 Workflow/Version/Rule routes; Events/EventTypes have their own resources). */
 export class WorkflowsResource extends ResourceSupport {
   constructor(transport: HttpTransport) {
     super(transport);

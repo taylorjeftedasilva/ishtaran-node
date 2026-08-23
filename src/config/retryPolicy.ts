@@ -1,15 +1,16 @@
 /**
- * Política de retry — ver SDK_CAPABILITY_SPEC.md §8. Retry só em falha de conexão, 429 (respeitando
- * `Retry-After`), e 5xx quando a chamada tem Idempotency-Key. Nunca em 4xx determinístico.
+ * Retry policy -- see SDK_CAPABILITY_SPEC.md §8. Retries only on connection failure, 429
+ * (respecting `Retry-After`), and 5xx when the call has an Idempotency-Key. Never on a
+ * deterministic 4xx.
  */
 export interface RetryPolicy {
-  /** Tentativas adicionais além da primeira (default 2 → até 3 tentativas totais). */
+  /** Additional attempts beyond the first (default 2 -> up to 3 total attempts). */
   maxRetries: number;
-  /** Atraso base do backoff exponencial em ms (default 200). */
+  /** Base delay of the exponential backoff in ms (default 200). */
   baseBackoffMs: number;
-  /** Fator multiplicativo por tentativa (default 2.0). */
+  /** Multiplicative factor per attempt (default 2.0). */
   backoffMultiplier: number;
-  /** Teto do backoff em ms, antes do jitter (default 5000). */
+  /** Backoff cap in ms, before jitter (default 5000). */
   maxBackoffMs: number;
 }
 

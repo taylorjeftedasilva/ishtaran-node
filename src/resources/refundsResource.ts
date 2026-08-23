@@ -3,7 +3,7 @@ import { HttpTransport, getRequest, postRequest } from '../http/types.js';
 import { resolveIdempotencyKey } from '../idempotency/idempotencyKeyGenerator.js';
 import { ExecuteRefundResult, RefundResponse, mapExecuteRefundResult, mapRefundResponse } from '../model/settlement.js';
 
-/** Data Plane — `Refunds` (3 rotas reais, sob o mesmo módulo real `Settlement`). */
+/** Data Plane -- `Refunds` (3 real routes, under the same real `Settlement` module). */
 export class RefundsResource extends ResourceSupport {
   constructor(transport: HttpTransport) {
     super(transport);

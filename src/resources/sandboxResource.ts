@@ -15,9 +15,9 @@ import {
 import { EnumValue } from '../model/enumFactory.js';
 
 /**
- * Data Plane, exclusivo de `Environment` do tipo Sandbox — `Sandbox` (9 rotas reais). Nunca
- * disponível/válido contra Production (o próprio backend rejeita com 422 se o Environment não for
- * Sandbox).
+ * Data Plane, exclusive to `Environment`s of type Sandbox -- `Sandbox` (9 real routes). Never
+ * available/valid against Production (the backend itself rejects it with 422 if the Environment
+ * isn't Sandbox).
  */
 export class SandboxResource extends ResourceSupport {
   constructor(transport: HttpTransport) {

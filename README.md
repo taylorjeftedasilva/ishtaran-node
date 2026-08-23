@@ -1,28 +1,33 @@
 # Ishtaran TypeScript/Node.js SDK
 
-SDK oficial em TypeScript/Node.js para a [API Ishtaran](https://ishtaran.com) — plataforma
-financeira programável. Segunda implementação do [Ishtaran Official SDK Program](../../SDK_CAPABILITY_SPEC.md)
-(Java → **TypeScript** → Python → Go), 100% de paridade funcional com o Java (SDK de referência).
+Official TypeScript/Node.js SDK for the [Ishtaran API](https://ishtaran.com) — a programmable
+financial platform. Second implementation of the [Ishtaran Official SDK Program](../../SDK_CAPABILITY_SPEC.md)
+(Java → **TypeScript** → Python → Go), 100% functional parity with the Java SDK (reference
+implementation).
 
-## Duas camadas, mesmo backend
+## Two layers, same backend
 
 - **Easy Mode** — `client.receivePayment(...)`, `client.withdraw(...)`, `client.getBalance(...)`,
-  `client.verifyWebhookSignature(...)`: composição rápida, nunca duplica lógica de negócio.
-- **Core API** — `client.accounts`, `client.transactions`, `client.withdrawals`, etc.: acesso
-  granular aos mesmos 83 endpoints reais da API (ver [`SDK_FEATURE_MATRIX.md`](../../SDK_FEATURE_MATRIX.md)).
+  `client.verifyWebhookSignature(...)`: fast composition, never duplicates business logic.
+- **Core API** — `client.accounts`, `client.transactions`, `client.withdrawals`, etc.: granular
+  access to the same 90 real API endpoints (see [`SDK_FEATURE_MATRIX.md`](../../SDK_FEATURE_MATRIX.md)).
+- **AccountHolders** — `client.accountHolders`: self-service for the financial holder's global
+  identity (`DEC-032`) — `signUp`/`login`/`me`/`claimInvitation`/`signUpAndClaimInvitation`.
+  Isolated session: never shares a token with `client.auth` (Member) nor with the
+  Organization's API Key within the same client instance.
 
-## Instalação
+## Installation
 
-Ainda não publicado no npm (decisão de licenciamento pendente). Para consumir localmente:
+Not yet published on npm (licensing decision pending). To consume locally:
 
 ```bash
 cd sdks/typescript
 npm install && npm run build && npm pack
-# no seu projeto:
-npm install /caminho/para/ishtaran-sdk-1.0.0-SNAPSHOT.tgz
+# in your project:
+npm install /path/to/ishtaran-sdk-1.0.0-SNAPSHOT.tgz
 ```
 
-Requer **Node.js 18+**. ESM e CJS suportados (dual build).
+Requires **Node.js 18+**. ESM and CJS supported (dual build).
 
 ## Quickstart
 
@@ -31,37 +36,39 @@ import { IshtaranClient, Environment } from '@ishtaran/sdk';
 
 const client = IshtaranClient.create({
   apiKey: process.env.ISHTARAN_API_KEY,
-  environment: Environment.Local, // ou Sandbox/Production com baseUrl explícito
+  environment: Environment.Local, // or Sandbox/Production with an explicit baseUrl
 });
 
 const balance = await client.getBalance(accountId, assetNetworkId);
-console.log('Available:', balance.available); // string exata, nunca number
+console.log('Available:', balance.available); // exact string, never a number
 ```
 
-Veja [`GETTING_STARTED.md`](GETTING_STARTED.md) e [`examples/`](examples/).
+See [`GETTING_STARTED.md`](GETTING_STARTED.md) and [`examples/`](examples/).
 
-## Dinheiro é sempre string
+## Money is always a string
 
-Todo campo monetário (`amount`, `estimatedNetworkFee`, `available`, etc.) é tipado como `string` —
-nunca `number`. A API real envia dinheiro como `number(double)` no JSON; `JSON.parse` nativo já
-perderia precisão antes do SDK poder intervir, então todo parsing de resposta usa `lossless-json`,
-preservando o texto exato de cada número. Ver [`SDK_CAPABILITY_SPEC.md` §11.1](../../SDK_CAPABILITY_SPEC.md#111-dinheiro).
+Every monetary field (`amount`, `estimatedNetworkFee`, `available`, etc.) is typed as `string` —
+never `number`. The real API sends money as `number(double)` in JSON; the native `JSON.parse`
+would already lose precision before the SDK could intervene, so all response parsing uses
+`lossless-json`, preserving the exact text of every number. See
+[`SDK_CAPABILITY_SPEC.md` §11.1](../../SDK_CAPABILITY_SPEC.md#111-dinheiro).
 
-## Documentação
+## Documentation
 
-| Documento | Conteúdo |
+| Document | Content |
 |---|---|
-| [GETTING_STARTED.md](GETTING_STARTED.md) | Primeiro uso |
+| [GETTING_STARTED.md](GETTING_STARTED.md) | First use |
 | [AUTHENTICATION.md](AUTHENTICATION.md) | `X-Api-Key` vs. Member JWT |
-| [EASY_MODE.md](EASY_MODE.md) | Quando usar Easy Mode vs. Core |
-| [CORE_API.md](CORE_API.md) | Cobertura completa de recursos |
-| [ERROR_HANDLING.md](ERROR_HANDLING.md) | Hierarquia `IshtaranError` |
-| [IDEMPOTENCY.md](IDEMPOTENCY.md) | Chave automática vs. explícita |
-| [RETRIES.md](RETRIES.md) | Política de retry |
-| [WEBHOOKS.md](WEBHOOKS.md) | Verificação de assinatura |
-| [CONFIGURATION.md](CONFIGURATION.md) | Configuração do client |
-| [SECURITY.md](SECURITY.md) | Segredos, TLS, redação |
-| [FEATURES.md](FEATURES.md) | Cobertura de capacidades |
-| [CHANGELOG.md](CHANGELOG.md) | Histórico de versões |
+| [EASY_MODE.md](EASY_MODE.md) | When to use Easy Mode vs. Core |
+| [CORE_API.md](CORE_API.md) | Complete resource coverage |
+| [ERROR_HANDLING.md](ERROR_HANDLING.md) | `IshtaranError` hierarchy |
+| [IDEMPOTENCY.md](IDEMPOTENCY.md) | Automatic vs. explicit key |
+| [RETRIES.md](RETRIES.md) | Retry policy |
+| [WEBHOOKS.md](WEBHOOKS.md) | Signature verification |
+| [CONFIGURATION.md](CONFIGURATION.md) | Client configuration |
+| [SECURITY.md](SECURITY.md) | Secrets, TLS, redaction |
+| [FEATURES.md](FEATURES.md) | Capability coverage |
+| [CHANGELOG.md](CHANGELOG.md) | Version history |
 
-Todo comportamento é extraído da API real, nunca inventado — ver [`SDK_CAPABILITY_SPEC.md`](../../SDK_CAPABILITY_SPEC.md).
+Every behavior is derived from the real API, never invented — see
+[`SDK_CAPABILITY_SPEC.md`](../../SDK_CAPABILITY_SPEC.md).

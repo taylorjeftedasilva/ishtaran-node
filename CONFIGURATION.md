@@ -4,34 +4,34 @@
 const client = IshtaranClient.create({
   apiKey: '...',
   environment: Environment.Local,
-  baseUrl: 'http://localhost:8080', // sempre explícito quando presente
+  baseUrl: 'http://localhost:8080', // always explicit when present
   connectTimeoutMs: 5000,           // default
   requestTimeoutMs: 30000,          // default
-  enableLogging: true,              // opt-in, nunca ligado por padrão
+  enableLogging: true,              // opt-in, never on by default
 });
 ```
 
 ## `baseUrl`/`Environment`
 
-| Environment | Default | `baseUrl` explícito? |
+| Environment | Default | Explicit `baseUrl`? |
 |---|---|---|
-| `Local` | `http://localhost:8080` | Não |
-| `Sandbox`/`Production` | **nenhum** — infra ainda não provisionada | **Sim, obrigatório** |
+| `Local` | `http://localhost:8080` | No |
+| `Sandbox`/`Production` | **none** — infra not yet provisioned | **Yes, required** |
 
-Construir sem `baseUrl` para `Sandbox`/`Production` lança imediatamente — nunca aponta para uma URL
-inventada.
+Constructing without `baseUrl` for `Sandbox`/`Production` throws immediately — it never points
+to a made-up URL.
 
-## Limitação conhecida — timeout
+## Known limitation — timeout
 
-`connectTimeoutMs` é aceito na configuração (paridade com os outros SDKs) mas ainda não é imposto
-separadamente de `requestTimeoutMs` nesta versão — só o timeout total
-(`AbortSignal.timeout(requestTimeoutMs)`) é aplicado sobre o `fetch` nativo. Documentado, não
-escondido.
+`connectTimeoutMs` is accepted in the config (for parity with the other SDKs) but is not yet
+enforced separately from `requestTimeoutMs` in this version — only the total timeout
+(`AbortSignal.timeout(requestTimeoutMs)`) is applied on top of the native `fetch`. Documented,
+not hidden.
 
 ## TLS
 
-Verificado por padrão (comportamento nativo do `fetch`); nunca desabilitado por este SDK.
+Verified by default (native `fetch` behavior); never disabled by this SDK.
 
 ## User-Agent
 
-`ishtaran-node/<versão>` — fixo, sem dado pessoal.
+`ishtaran-node/<version>` — fixed, no personal data.

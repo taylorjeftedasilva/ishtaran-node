@@ -52,12 +52,12 @@ describe('IshtaranClient Easy Mode composition (no network, via forTesting)', ()
   });
 
   it('verifyWebhookSignature makes no HTTP call', async () => {
-    const fake = new FakeHttpTransport(); // nenhuma resposta enfileirada -- lançaria se fosse chamado
+    const fake = new FakeHttpTransport(); // no response queued -- would throw if called
     const client = IshtaranClient.forTesting(fake);
 
     const ts = Math.floor(Date.now() / 1000);
     const valid = client.verifyWebhookSignature('{}', 'deadbeef', String(ts), 'secret');
-    expect(valid).toBe(false); // assinatura incorreta, mas sem lançar/chamar rede
+    expect(valid).toBe(false); // incorrect signature, but no throw/network call
     expect(fake.requestCount).toBe(0);
   });
 });

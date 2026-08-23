@@ -1,24 +1,25 @@
-import { arrayField, arrayFieldOrNull, field, stringField, stringFieldOrNull } from '../resources/resourceSupport.js';
+import { arrayField, field, stringField, stringFieldOrNull } from '../resources/resourceSupport.js';
 import { EnumValue } from './enumFactory.js';
 import { WithdrawalStatus, EntryNature, TransactionStatus } from './enums.js';
 
+/**
+ * DEC-032 -- an `Account` no longer belongs to a single Organization directly (global identity,
+ * linked to N Organizations via `Relationship`). For the Organization-scoped link, see
+ * {@link OrganizationAccountResponse} (`accountHolders.ts`), returned by `accounts.list()`.
+ */
 export interface AccountResponse {
   accountId: string;
-  organizationId: string;
-  externalId: string | null;
+  accountHolderId: string;
   status: string | null;
   createdAt: string;
-  authorizedApplicationIds: string[] | null;
 }
 
 export function mapAccountResponse(raw: unknown): AccountResponse {
   return {
     accountId: stringFieldOrNull(raw, 'accountId')!,
-    organizationId: stringFieldOrNull(raw, 'organizationId')!,
-    externalId: stringFieldOrNull(raw, 'externalId'),
+    accountHolderId: stringFieldOrNull(raw, 'accountHolderId')!,
     status: stringFieldOrNull(raw, 'status'),
     createdAt: stringFieldOrNull(raw, 'createdAt')!,
-    authorizedApplicationIds: arrayFieldOrNull(raw, 'authorizedApplicationIds', (x) => String(x)),
   };
 }
 
@@ -34,7 +35,7 @@ export interface WithdrawalQuoteResponse {
   accountId: string;
   withdrawalDestinationId: string;
   assetNetworkId: string;
-  /** String exata — nunca `number`, nunca arredondado (ver SDK_CAPABILITY_SPEC.md §11.1). */
+  /** Exact string -- never a `number`, never rounded (see SDK_CAPABILITY_SPEC.md §11.1). */
   requestedAmount: string;
   estimatedNetworkFee: string;
   estimatedRecipientAmount: string;

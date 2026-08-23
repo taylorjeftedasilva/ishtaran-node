@@ -1,4 +1,4 @@
-// 07 — Cotar um saque ANTES de comprometer o valor (leitura pura, nunca reserva saldo).
+// 07 -- Quote a withdrawal BEFORE committing the amount (pure read, never reserves balance).
 import { IshtaranClient, Environment } from '@ishtaran/sdk';
 
 const client = IshtaranClient.create({ apiKey: process.env.ISHTARAN_API_KEY, environment: Environment.Local });

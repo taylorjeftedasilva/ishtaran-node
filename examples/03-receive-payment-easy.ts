@@ -1,5 +1,5 @@
-// 03 — Receber um pagamento via Easy Mode: compõe Transaction + Payment Intent, devolve o
-// depositAddress real com os IDs reais do Core para debugging.
+// 03 -- Receive a payment via Easy Mode: composes Transaction + Payment Intent, returns the
+// real depositAddress with the real Core IDs for debugging.
 import { IshtaranClient, Environment } from '@ishtaran/sdk';
 
 const client = IshtaranClient.create({ apiKey: process.env.ISHTARAN_API_KEY, environment: Environment.Local });
@@ -16,4 +16,4 @@ console.log('paymentIntentId=', payment.paymentIntentId);
 console.log('depositAddress=', payment.depositAddress);
 
 const finished = await client.waitForPayment(payment.transactionId, payment.paymentIntentId, 10 * 60_000, 5_000);
-console.log('Status final:', finished.paymentIntentStatus.name);
+console.log('Final status:', finished.paymentIntentStatus.name);

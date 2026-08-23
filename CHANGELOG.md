@@ -1,30 +1,30 @@
 # Changelog
 
-Segue [SemVer](https://semver.org/). Ainda não publicado (npm).
+Follows [SemVer](https://semver.org/). Not yet published (npm).
 
 ## [1.0.0-SNAPSHOT] — 2026-08-17
 
-Segunda implementação do Ishtaran Official SDK Program — 100% de paridade funcional com o Java
-(SDK de referência).
+Second implementation of the Ishtaran Official SDK Program — 100% functional parity with the
+Java SDK (reference implementation).
 
-### Adicionado
+### Added
 
-- Client central (`IshtaranClient.create(...)`).
-- Core API completo — 16 módulos, 93 operações reais.
+- Central client (`IshtaranClient.create(...)`).
+- Complete Core API — 16 modules, 93 real operations.
 - Easy Mode — `receivePayment`/`getPayment`/`waitForPayment`, `withdraw`, `getBalance`,
   `verifyWebhookSignature`.
-- Autenticação `X-Api-Key` + Member JWT.
-- Hierarquia `IshtaranError` completa.
-- Retry seguro com backoff+jitter.
-- Idempotência (body e header, conforme o endpoint real).
-- Paginação real via async generators lazy.
-- Enums forward-compatible (`fromRaw`/`isUnknown`, fallback `UNKNOWN`).
-- Dinheiro sempre `string`, via `lossless-json` (nunca `Number`, nunca arredondado).
-- `verifyWebhookSignature`/`computeWebhookSignature` (HMAC-SHA256, tempo constante).
-- Logging opt-in com redação central.
-- Empacotamento validado via `npm pack` + consumo real (ESM e CJS) por projeto de amostra.
+- `X-Api-Key` + Member JWT authentication.
+- Complete `IshtaranError` hierarchy.
+- Safe retry with backoff+jitter.
+- Idempotency (body and header, depending on the endpoint).
+- Real pagination via lazy async generators.
+- Forward-compatible enums (`fromRaw`/`isUnknown`, `UNKNOWN` fallback).
+- Money always as `string`, via `lossless-json` (never `Number`, never rounded).
+- `verifyWebhookSignature`/`computeWebhookSignature` (HMAC-SHA256, constant time).
+- Opt-in logging with central redaction.
+- Packaging validated via `npm pack` + real consumption (ESM and CJS) by a sample project.
 
-### Conhecido, ainda pendente
+### Known, still pending
 
-- `connectTimeoutMs` aceito mas não imposto separadamente de `requestTimeoutMs` (ver `CONFIGURATION.md`).
-- Publicação real no npm — bloqueada por decisão de licenciamento pendente.
+- `connectTimeoutMs` accepted but not enforced separately from `requestTimeoutMs` (see `CONFIGURATION.md`).
+- Real npm publication — blocked on a pending licensing decision.

@@ -1,4 +1,4 @@
-// 01 — Quickstart mínimo: API key -> client -> primeira chamada útil.
+// 01 -- Minimal quickstart: API key -> client -> first useful call.
 import { IshtaranClient, Environment } from '@ishtaran/sdk';
 
 const client = IshtaranClient.create({
@@ -6,4 +6,4 @@ const client = IshtaranClient.create({
   environment: Environment.Local,
 });
 
-console.log(`Client Ishtaran pronto: ${client.accounts.constructor.name} disponível.`);
+console.log(`Ishtaran client ready: ${client.accounts.constructor.name} available.`);

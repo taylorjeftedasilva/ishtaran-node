@@ -3,7 +3,7 @@ import { HttpTransport, postRequest } from '../http/types.js';
 import { CreatedResourceResponse, mapCreatedResourceResponse } from '../model/controlPlane.js';
 import { EnumValue } from '../model/enumFactory.js';
 
-/** Control Plane — `Applications` (4 rotas reais, além de create em {@link OrganizationsResource}). */
+/** Control Plane -- `Applications` (4 real routes, plus create in {@link OrganizationsResource}). */
 export class ApplicationsResource extends ResourceSupport {
   constructor(transport: HttpTransport) {
     super(transport);

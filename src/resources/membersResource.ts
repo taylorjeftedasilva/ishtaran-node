@@ -14,7 +14,7 @@ export class MembersResource extends ResourceSupport {
     return this.execute(postRequest(`/v1/organizations/${organizationId}/members`, body, false), mapInviteMemberResult);
   }
 
-  /** Devolve o token real de acesso — mesmo mecanismo de `auth.login()` preenche a sessão do client. */
+  /** Returns the real access token -- the same mechanism as `auth.login()` fills the client's session. */
   acceptInvite(inviteToken: string, password: string): Promise<TokenResult> {
     const body = this.toJson({ inviteToken, password });
     return this.execute(postRequest('/v1/members/accept-invite', body, false), mapTokenResult);

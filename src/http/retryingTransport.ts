@@ -3,9 +3,9 @@ import { RetryPolicy } from '../config/retryPolicy.js';
 import { NetworkError, TimeoutError } from '../error/errors.js';
 
 /**
- * Decorator de retry — ver SDK_CAPABILITY_SPEC.md §8. Só reintenta: falha de conexão/timeout
- * (sempre), HTTP 429 (sempre, respeitando `Retry-After` quando presente), HTTP 5xx (só se
- * `request.idempotent`). Nunca reintenta 400/401/403/404/409/422 — são determinísticos.
+ * Retry decorator -- see SDK_CAPABILITY_SPEC.md §8. Only retries: connection failure/timeout
+ * (always), HTTP 429 (always, respecting `Retry-After` when present), HTTP 5xx (only if
+ * `request.idempotent`). Never retries 400/401/403/404/409/422 -- those are deterministic.
  */
 export class RetryingTransport implements HttpTransport {
   constructor(

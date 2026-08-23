@@ -3,16 +3,16 @@ import { NetworkError, TimeoutError } from '../error/errors.js';
 import { IshtaranClientConfig } from '../config/clientConfig.js';
 
 /**
- * Única implementação real de {@link HttpTransport} — sobre `fetch` nativo do Node (zero
- * dependência de terceiros para transporte, mesma filosofia do `java.net.http.HttpClient` do SDK
- * Java). TLS verificado por padrão (comportamento nativo do Node `fetch`); nunca desabilitado por
- * este SDK. `redirect: 'manual'` — nunca segue redirect automaticamente (paridade com o Java, que
- * usa `Redirect.NEVER` por padrão; sem isso, o `fetch` nativo seguiria 3xx silenciosamente, um
- * achado real corrigido em SECURITY_REVIEW.md).
+ * The only real {@link HttpTransport} implementation -- over Node's native `fetch` (zero
+ * third-party dependency for transport, the same philosophy as the Java SDK's
+ * `java.net.http.HttpClient`). TLS verified by default (Node `fetch`'s native behavior); never
+ * disabled by this SDK. `redirect: 'manual'` -- never follows a redirect automatically (parity
+ * with Java, which uses `Redirect.NEVER` by default; without this, native `fetch` would silently
+ * follow 3xx, a real finding fixed in SECURITY_REVIEW.md).
  *
- * Limitação conhecida documentada: `connectTimeoutMs` é aceito na configuração (paridade com os
- * outros SDKs) mas ainda não é imposto separadamente de `requestTimeoutMs` nesta versão — só o
- * timeout total (`AbortSignal.timeout(requestTimeoutMs)`) é aplicado. Ver CONFIGURATION.md.
+ * Documented known limitation: `connectTimeoutMs` is accepted in the configuration (parity with
+ * the other SDKs) but is not yet enforced separately from `requestTimeoutMs` in this version --
+ * only the total timeout (`AbortSignal.timeout(requestTimeoutMs)`) is applied. See CONFIGURATION.md.
  */
 export class FetchHttpTransport implements HttpTransport {
   private readonly baseUrl: string;
@@ -46,8 +46,8 @@ export class FetchHttpTransport implements HttpTransport {
 
       if (response.status >= 300 && response.status < 400) {
         throw new NetworkError(
-          `Redirect (${response.status}) recebido ao chamar ${request.method} ${request.path} — ` +
-            'este SDK nunca segue redirects automaticamente (mesma política do SDK Java).',
+          `Redirect (${response.status}) received calling ${request.method} ${request.path} -- ` +
+            'this SDK never follows redirects automatically (same policy as the Java SDK).',
         );
       }
 
@@ -63,9 +63,9 @@ export class FetchHttpTransport implements HttpTransport {
         throw error;
       }
       if (error instanceof DOMException && error.name === 'TimeoutError') {
-        throw new TimeoutError(`Timeout ao chamar ${request.method} ${request.path}`, error);
+        throw new TimeoutError(`Timeout calling ${request.method} ${request.path}`, error);
       }
-      throw new NetworkError(`Falha de rede ao chamar ${request.method} ${request.path}`, error);
+      throw new NetworkError(`Network failure calling ${request.method} ${request.path}`, error);
     }
   }
 }

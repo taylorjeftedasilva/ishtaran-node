@@ -20,24 +20,25 @@ interface ProblemDetails {
 }
 
 /**
- * Traduz uma {@link IshtaranHttpResponse} de erro real para o subtipo {@link IshtaranError} correto
- * — ver SDK_CAPABILITY_SPEC.md §6. 401/403 nunca têm corpo (§6.3); os demais 4xx/5xx normalmente
- * carregam `ProblemDetails`, mas o mapper nunca lança se o corpo vier vazio/malformado.
+ * Translates a real error {@link IshtaranHttpResponse} into the correct {@link IshtaranError}
+ * subtype -- see SDK_CAPABILITY_SPEC.md §6. 401/403 never have a body (§6.3); other 4xx/5xx
+ * usually carry `ProblemDetails`, but the mapper never throws if the body comes back
+ * empty/malformed.
  */
 export function mapError(response: IshtaranHttpResponse): IshtaranError {
   const status = response.status;
   const requestId = header(response, 'X-Request-Id') ?? header(response, 'X-Correlation-Id');
 
   if (status === 401) {
-    return new AuthenticationError('Falha de autenticação (401) — API Key ou token ausente/inválido.');
+    return new AuthenticationError('Authentication failure (401) -- missing or invalid API Key or token.');
   }
   if (status === 403) {
-    return new AuthorizationError('Não autorizado (403) — credencial válida, mas sem permissão para esta operação.');
+    return new AuthorizationError('Unauthorized (403) -- valid credential, but not permitted for this operation.');
   }
 
   const problem = tryParse(response.body);
   const code = problem?.code;
-  const detail = problem?.detail ?? `Erro HTTP ${status}`;
+  const detail = problem?.detail ?? `HTTP error ${status}`;
 
   if (status === 429) {
     const retryAfterHeader = header(response, 'Retry-After');

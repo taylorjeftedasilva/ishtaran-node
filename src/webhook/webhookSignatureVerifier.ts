@@ -3,11 +3,11 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 const DEFAULT_TOLERANCE_SECONDS = 5 * 60;
 
 /**
- * Verificação real de assinatura de webhook — algoritmo extraído byte a byte de
- * `WebhookSignatureCalculator.cs`/`HttpWebhookDeliveryPort.cs` (ver SDK_CAPABILITY_SPEC.md §10):
+ * Real webhook signature verification -- algorithm extracted byte for byte from
+ * `WebhookSignatureCalculator.cs`/`HttpWebhookDeliveryPort.cs` (see SDK_CAPABILITY_SPEC.md §10):
  * `signedContent = "{unixTimestamp}.{rawBodyJson}"`,
- * `signature = lowercase_hex(HMAC_SHA256(secret, signedContent))`. Usa o `rawBody` exatamente como
- * recebido — nunca reserializa o JSON antes de calcular.
+ * `signature = lowercase_hex(HMAC_SHA256(secret, signedContent))`. Uses `rawBody` exactly as
+ * received -- never reserializes the JSON before computing.
  */
 export function computeWebhookSignature(unixTimestampSeconds: number, rawBody: string, endpointSecret: string): string {
   const signedContent = `${unixTimestampSeconds}.${rawBody}`;

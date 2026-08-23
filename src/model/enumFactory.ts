@@ -1,6 +1,6 @@
 /**
- * Fábrica genérica de enum forward-compatible — ver SDK_CAPABILITY_SPEC.md §11.4. Um valor bruto
- * desconhecido nunca lança: vira `{ name: 'UNKNOWN', rawValue }` preservando o valor exato recebido
+ * Generic forward-compatible enum factory -- see SDK_CAPABILITY_SPEC.md §11.4. An unknown raw
+ * value never throws: it becomes `{ name: 'UNKNOWN', rawValue }`, preserving the exact received value
  * (inteiro ou string, conforme o Grupo do enum real — ver §11.3).
  */
 export interface EnumValue<TRaw extends number | string> {

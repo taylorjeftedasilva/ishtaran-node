@@ -1,15 +1,15 @@
 import { randomUUID } from 'node:crypto';
 
 /**
- * Gera a `idempotencyKey` (campo de corpo, ou header em 2 endpoints específicos de
- * OrganizationTenancy — ver SDK_CAPABILITY_SPEC.md §9) quando o consumidor não fornece uma
- * explicitamente. UUID v4 — mesmo formato aceito pelos campos `Guid` reais da API.
+ * Generates the `idempotencyKey` (a body field, or a header on 2 specific OrganizationTenancy
+ * endpoints -- see SDK_CAPABILITY_SPEC.md §9) when the caller doesn't supply one explicitly.
+ * UUID v4 -- the same format the API's real `Guid` fields accept.
  */
 export function generateIdempotencyKey(): string {
   return randomUUID();
 }
 
-/** Nunca gera uma nova chave se o consumidor já forneceu uma — sobrescrita explícita sempre vence. */
+/** Never generates a new key if the caller already supplied one -- an explicit override always wins. */
 export function resolveIdempotencyKey(explicitKey: string | undefined | null): string {
   return explicitKey && explicitKey.trim() !== '' ? explicitKey : generateIdempotencyKey();
 }

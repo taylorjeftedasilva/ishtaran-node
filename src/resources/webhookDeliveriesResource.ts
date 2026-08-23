@@ -2,7 +2,7 @@ import { ResourceSupport } from './resourceSupport.js';
 import { HttpTransport, getRequest, postRequest } from '../http/types.js';
 import { RedeliverWebhookResult, WebhookDeliveryResponse, mapRedeliverWebhookResult, mapWebhookDeliveryResponse } from '../model/webhookEndpoints.js';
 
-/** Control Plane (gestão) — `WebhookDeliveries` (2 rotas reais, mesmo módulo `Notifications`). */
+/** Control Plane (management) -- `WebhookDeliveries` (2 real routes, same `Notifications` module). */
 export class WebhookDeliveriesResource extends ResourceSupport {
   constructor(transport: HttpTransport) {
     super(transport);

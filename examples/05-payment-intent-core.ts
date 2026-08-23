@@ -1,4 +1,4 @@
-// 05 — Criar um Payment Intent via Core API. O depositAddress real só aparece no GET dedicado.
+// 05 -- Create a Payment Intent via the Core API. The real depositAddress only appears on the dedicated GET.
 import { IshtaranClient, Environment } from '@ishtaran/sdk';
 
 const client = IshtaranClient.create({ apiKey: process.env.ISHTARAN_API_KEY, environment: Environment.Local });

@@ -1,4 +1,4 @@
-// 06 — Liquidar uma Transaction financiada (Settlement) e consultar o resumo.
+// 06 -- Settle a funded Transaction (Settlement) and query the summary.
 import { IshtaranClient, Environment } from '@ishtaran/sdk';
 
 const client = IshtaranClient.create({ apiKey: process.env.ISHTARAN_API_KEY, environment: Environment.Local });

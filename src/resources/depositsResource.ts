@@ -16,7 +16,7 @@ export class DepositsResource extends ResourceSupport {
     super(transport);
   }
 
-  /** `depositAddress` real só é exposto pelo GET dedicado ({@link getPaymentIntent}) em seguida. */
+  /** The real `depositAddress` is only exposed by the dedicated follow-up GET ({@link getPaymentIntent}). */
   createPaymentIntent(
     organizationId: string,
     transactionId: string,

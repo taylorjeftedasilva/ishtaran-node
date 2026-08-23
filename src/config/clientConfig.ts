@@ -13,7 +13,7 @@ export interface IshtaranClientConfigInput {
   retryPolicy?: RetryPolicy;
   userAgent?: string;
   enableLogging?: boolean;
-  /** Nunca usar contra Sandbox/Production — lança em {@link buildClientConfig} se combinado com outro Environment. */
+  /** Never use this against Sandbox/Production -- {@link buildClientConfig} throws if combined with another Environment. */
   allowInsecureTlsForLocalDevelopment?: boolean;
 }
 
@@ -30,8 +30,8 @@ export interface IshtaranClientConfig {
 }
 
 /**
- * Fábrica única de configuração — fonte de verdade de defaults (baseUrl/apiKey/timeout/
- * environment/userAgent/retryPolicy), nunca dispersa entre resources individuais.
+ * Single configuration factory -- the source of truth for defaults (baseUrl/apiKey/timeout/
+ * environment/userAgent/retryPolicy), never scattered across individual resources.
  */
 export function buildClientConfig(input: IshtaranClientConfigInput): IshtaranClientConfig {
   const environment = input.environment ?? Environment.Local;
@@ -40,7 +40,7 @@ export function buildClientConfig(input: IshtaranClientConfigInput): IshtaranCli
 
   if (allowInsecureTlsForLocalDevelopment && environment !== Environment.Local) {
     throw new Error(
-      'allowInsecureTlsForLocalDevelopment só pode ser usado com Environment.Local — nunca contra Sandbox/Production.',
+      'allowInsecureTlsForLocalDevelopment can only be used with Environment.Local -- never against Sandbox/Production.',
     );
   }
 

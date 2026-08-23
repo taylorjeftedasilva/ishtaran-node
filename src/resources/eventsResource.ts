@@ -4,7 +4,7 @@ import { resolveIdempotencyKey } from '../idempotency/idempotencyKeyGenerator.js
 import { EventIngestionResult, mapEventIngestionResult } from '../model/workflow.js';
 import { EnumValue } from '../model/enumFactory.js';
 
-/** Data Plane — `Events` (1 rota real: ingestão, mesmo módulo `WorkflowRules`). */
+/** Data Plane -- `Events` (1 real route: ingestion, same `WorkflowRules` module). */
 export class EventsResource extends ResourceSupport {
   constructor(transport: HttpTransport) {
     super(transport);

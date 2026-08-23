@@ -14,7 +14,7 @@ export class LedgerResource extends ResourceSupport {
     return this.execute(getRequest(`/v1/accounts/${accountId}/balance?assetNetworkId=${assetNetworkId}`), mapBalanceResponse);
   }
 
-  /** `skip`/`take` são paginação real (ver SDK_CAPABILITY_SPEC.md §12.7). */
+  /** `skip`/`take` are real pagination (see SDK_CAPABILITY_SPEC.md §12.7). */
   listEntries(
     accountId: string,
     assetNetworkId: string,

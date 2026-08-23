@@ -1,8 +1,8 @@
 /**
- * Mascaramento central de segredos para log/toString/mensagens de erro — nunca o valor bruto.
- * Formato genérico (4 primeiros + **** + 4 últimos): a API Key real do Ishtaran não tem prefixo de
- * ambiente (Base64 puro de 32 bytes — ver SDK_CAPABILITY_SPEC.md §12.5), então este SDK nunca
- * assume um prefixo tipo `sk_live_` que não existe de verdade.
+ * Central secret masking for log/toString/error messages -- never the raw value. Generic format
+ * (first 4 + **** + last 4): the real Ishtaran API Key has no environment prefix (pure Base64 of
+ * 32 bytes -- see SDK_CAPABILITY_SPEC.md §12.5), so this SDK never assumes a `sk_live_`-style
+ * prefix that doesn't actually exist.
  */
 export function mask(secret: string | undefined | null): string {
   if (secret === undefined || secret === null) {

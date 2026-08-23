@@ -2,9 +2,9 @@ import { HttpTransport, IshtaranHttpRequest, IshtaranHttpResponse } from './type
 import { isSensitiveHeader, mask } from '../util/redactor.js';
 
 /**
- * Logging opt-in (só ativo quando `enableLogging: true` na config) — nunca loga
- * `Authorization`/`X-Api-Key` em texto puro (redação central), nunca loga o corpo bruto (pode
- * conter secret de webhook/API Key na resposta de criação — só método/path/status/duração).
+ * Opt-in logging (only active when `enableLogging: true` is set in the config) -- never logs
+ * `Authorization`/`X-Api-Key` in plain text (central redaction), never logs the raw body (it
+ * could contain a webhook secret/API Key in a creation response -- only method/path/status/duration).
  */
 export class LoggingTransport implements HttpTransport {
   constructor(private readonly delegate: HttpTransport) {}

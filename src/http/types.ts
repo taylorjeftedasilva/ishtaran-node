@@ -1,15 +1,16 @@
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 /**
- * Requisição interna, independente de biblioteca de transporte — nunca vaza `fetch`/`undici` na
- * superfície pública, permitindo testar `resources/*` com um {@link HttpTransport} falso, sem rede.
+ * Internal request, independent of any transport library -- never leaks `fetch`/`undici` into
+ * the public surface, letting `resources/*` be tested with a fake {@link HttpTransport}, no
+ * network.
  */
 export interface IshtaranHttpRequest {
   method: HttpMethod;
   path: string;
   headers: Record<string, string>;
   body?: string;
-  /** Chamadas com Idempotency-Key (ou GET, naturalmente idempotente) podem ter 5xx retried com segurança (§8 do Capability Spec). */
+  /** Calls with an Idempotency-Key (or GET, naturally idempotent) can have 5xx safely retried (Capability Spec §8). */
   idempotent: boolean;
 }
 
@@ -49,8 +50,9 @@ export function withHeader(request: IshtaranHttpRequest, name: string, value: st
 }
 
 /**
- * Abstração de transporte — a única implementação real é {@link FetchHttpTransport}, mas testes
- * usam uma implementação falsa in-memory, sem rede (requisito explícito do brief do SDK Program).
+ * Transport abstraction -- the only real implementation is {@link FetchHttpTransport}, but tests
+ * use a fake in-memory implementation, no network (an explicit requirement of the SDK Program
+ * brief).
  */
 export interface HttpTransport {
   send(request: IshtaranHttpRequest): Promise<IshtaranHttpResponse>;

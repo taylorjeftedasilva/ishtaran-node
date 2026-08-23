@@ -27,7 +27,7 @@ describe('lossless JSON parsing (money precision, SDK_CAPABILITY_SPEC.md §11.1)
   });
 
   it('matches the real backend small-payment example (0.9% fee, no floor)', () => {
-    // Mesmo cenário do teste de backend ExecuteSettlement_SmallPayment_NoFloor.
+    // Same scenario as the backend test ExecuteSettlement_SmallPayment_NoFloor.
     const raw = parseLossless('{"grossAmount": 1, "platformFeeAmount": 0.009, "distributableAmount": 0.991}');
     expect(moneyString(field(raw, 'platformFeeAmount'))).toBe('0.009');
     expect(moneyString(field(raw, 'distributableAmount'))).toBe('0.991');

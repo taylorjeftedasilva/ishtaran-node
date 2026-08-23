@@ -1,16 +1,16 @@
 /**
- * Async generator lazy sobre um endpoint com paginação real `skip`/`take` — busca a próxima página
- * sob demanda, nunca carrega a coleção inteira de uma vez (regra do brief: "nunca bulk-loading
- * unbounded"). Usado só nos 2 endpoints do SDK com paginação real de verdade (Withdrawals.list,
- * Ledger.listEntries — ver SDK_CAPABILITY_SPEC.md §12.7); todo outro endpoint de listagem devolve
- * um array simples (que já é iterável), sem fingir paginação que a API não tem.
+ * A lazy async generator over an endpoint with real `skip`/`take` pagination -- fetches the next
+ * page on demand, never loading the entire collection at once (brief rule: "never unbounded
+ * bulk-loading"). Used only for the SDK's 2 endpoints with genuinely real pagination
+ * (Withdrawals.list, Ledger.listEntries -- see SDK_CAPABILITY_SPEC.md §12.7); every other listing
+ * endpoint returns a plain array (already iterable), never faking pagination the API doesn't have.
  */
 export async function* paginate<T>(
   pageSize: number,
   fetchPage: (skip: number, take: number) => Promise<T[]>,
 ): AsyncGenerator<T, void, undefined> {
   if (pageSize <= 0) {
-    throw new Error('pageSize deve ser positivo');
+    throw new Error('pageSize must be positive');
   }
   let skip = 0;
   for (;;) {

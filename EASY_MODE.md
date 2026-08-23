@@ -1,27 +1,28 @@
 # Easy Mode vs. Core API
 
-## Use Easy Mode quando...
+## Use Easy Mode when...
 
-- Quer integrar rápido: `client.receivePayment(...)`, `client.withdraw(...)`, `client.getBalance(...)`.
-- Precisa esperar um resultado assíncrono com segurança: `client.waitForPayment(...)`,
-  `client.withdrawals.waitFor(...)`, `client.transactions.waitFor(...)` — sempre com timeout.
-- Só precisa verificar uma assinatura de webhook: `client.verifyWebhookSignature(...)`.
+- You want to integrate fast: `client.receivePayment(...)`, `client.withdraw(...)`, `client.getBalance(...)`.
+- You need to safely wait for an asynchronous result: `client.waitForPayment(...)`,
+  `client.withdrawals.waitFor(...)`, `client.transactions.waitFor(...)` — always with a timeout.
+- You only need to verify a webhook signature: `client.verifyWebhookSignature(...)`.
 
-## Use Core API quando...
+## Use Core API when...
 
-- Precisa de controle granular (`client.transactions.reserve(...)` vs. `client.settlements.executeSettlement(...)`).
-- Precisa de um recurso que o Easy Mode não cobre (`client.workflows`, `client.sandbox`, etc. — 93
-  operações reais, ver `SDK_FEATURE_MATRIX.md`).
-- Quer paginar de verdade: `client.withdrawals.listAll(...)`/`client.ledger.listAllEntries(...)`
-  (async generators lazy) em vez de uma única chamada.
+- You need granular control (`client.transactions.reserve(...)` vs. `client.settlements.executeSettlement(...)`).
+- You need a resource that Easy Mode doesn't cover (`client.workflows`, `client.sandbox`, etc. — 93
+  real operations, see `SDK_FEATURE_MATRIX.md`).
+- You want real pagination: `client.withdrawals.listAll(...)`/`client.ledger.listAllEntries(...)`
+  (lazy async generators) instead of a single call.
 
-## Equivalência concreta
+## Concrete equivalence
 
-| Easy Mode | Core equivalente |
+| Easy Mode | Core equivalent |
 |---|---|
 | `client.receivePayment(...)` | `transactions.create()` + `deposits.createPaymentIntent()` + `deposits.getPaymentIntent()` |
 | `client.withdraw(...)` | `withdrawals.createDestination()` + `withdrawals.request()` |
 | `client.getBalance(...)` | `ledger.getBalance(...)` |
 
-Easy Mode nunca esconde `withdrawalId`/`transactionId`/`paymentIntentId` reais. `withdraw()` sempre
-devolve `estimatedNetworkFee`/`estimatedRecipientAmount`/`status` — nunca só sucesso/falha.
+Easy Mode never hides the real `withdrawalId`/`transactionId`/`paymentIntentId`. `withdraw()`
+always returns `estimatedNetworkFee`/`estimatedRecipientAmount`/`status` — never just
+success/failure.

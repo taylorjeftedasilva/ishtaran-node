@@ -1,6 +1,6 @@
 /**
- * Guarda o access token de Member (após `auth.login(...)`) — mutável dentro de uma instância de
- * `IshtaranClient`. Nunca loga o token.
+ * Holds the Member access token (after `auth.login(...)`) -- mutable within an `IshtaranClient`
+ * instance. Never logs the token.
  */
 export class BearerTokenHolder {
   private token: string | undefined;

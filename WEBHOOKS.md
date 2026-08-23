@@ -1,6 +1,6 @@
 # Webhooks
 
-## Protocolo real
+## Real protocol
 
 ```
 signedContent = "{timestamp}.{rawBodyJson}"
@@ -9,32 +9,32 @@ signature     = lowercase_hex(HMAC_SHA256(secret = endpointSecret, message = sig
 
 Headers: `X-Webhook-Signature`, `X-Webhook-Timestamp`, `X-Webhook-Delivery-Id`.
 
-## Verificação (sem chamada HTTP)
+## Verification (no HTTP call)
 
 ```typescript
 import express from 'express';
 
 app.post('/webhooks/ishtaran', express.text({ type: '*/*' }), (req, res) => {
   const valid = client.verifyWebhookSignature(
-    req.body, // rawBody EXATO -- nunca re-serializado
+    req.body, // EXACT rawBody -- never re-serialized
     req.header('X-Webhook-Signature')!,
     req.header('X-Webhook-Timestamp')!,
     endpointSecret,
   );
   if (!valid) return res.status(401).end();
-  // processar o evento...
+  // process the event...
   res.status(200).end();
 });
 ```
 
-**Use sempre o `rawBody` exatamente como recebido.** Comparação em tempo constante
-(`node:crypto.timingSafeEqual`), tolerância de replay de 5 minutos (padrão), nunca loga o secret.
+**Always use `rawBody` exactly as received.** Constant-time comparison
+(`node:crypto.timingSafeEqual`), 5-minute replay tolerance (default), never logs the secret.
 
-## Gestão de endpoints (Core, requer Member JWT)
+## Endpoint management (Core, requires Member JWT)
 
 ```typescript
 const endpoint = await client.webhookEndpoints.create(organizationId, 'https://myapp.com/webhooks/ishtaran');
-// endpoint.secret -- guarde AGORA, nunca recuperável depois
+// endpoint.secret -- save it NOW, never retrievable afterward
 
 await client.webhookEndpoints.rotateSecret(endpoint.webhookEndpointId);
 await client.webhookEndpoints.deactivate(endpoint.webhookEndpointId);

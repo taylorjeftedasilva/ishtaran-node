@@ -1,28 +1,27 @@
 # Authentication
 
-Dois mecanismos reais (ver `SDK_CAPABILITY_SPEC.md` §3) — idêntico em espírito ao Java SDK.
+Two real mechanisms (see `SDK_CAPABILITY_SPEC.md` §3) — identical in spirit to the Java SDK.
 
-## `X-Api-Key` (recomendado)
+## `X-Api-Key` (recommended)
 
 ```typescript
-const client = IshtaranClient.create({ apiKey: '<sua API Key>', environment: Environment.Local });
+const client = IshtaranClient.create({ apiKey: '<your API Key>', environment: Environment.Local });
 ```
 
-Funciona em leitura e escrita nos 8 módulos Data Plane. Não funciona hoje para Control Plane
-(Organizations/Applications/Environments/Members/ApiKeys), leitura de AssetNetworkCatalog, ou
-gestão de WebhookEndpoint (lacunas reais da API, ver §12.3/§12.4).
+Works for read and write on the 8 Data Plane modules. Does not work today for Control Plane
+(Organizations/Applications/Environments/Members/ApiKeys), reading the AssetNetworkCatalog, or
+WebhookEndpoint management (real API gaps, see §12.3/§12.4).
 
-## Member JWT (login humano)
+## Member JWT (human login)
 
 ```typescript
 await client.auth.login(email, password);
-// client agora usa o token internamente em toda chamada de Control Plane subsequente.
+// the client now uses the token internally for every subsequent Control Plane call.
 const org = await client.organizations.get(organizationId);
 ```
 
-## Nunca misture disfarçadamente
+## Never mix them silently
 
-O SDK nunca envia a API Key como Bearer nem o JWT como `X-Api-Key`. Se ambos estiverem
-configurados, ambos os headers são enviados nas rotas Data Plane — evite configurá-los
-simultaneamente contra Organizations diferentes (comportamento de precedência não verificado ao
-vivo por este SDK).
+The SDK never sends the API Key as a Bearer token nor the JWT as `X-Api-Key`. If both are
+configured, both headers are sent on Data Plane routes — avoid configuring both at once
+against different Organizations (precedence behavior not verified live by this SDK).

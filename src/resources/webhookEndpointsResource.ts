@@ -13,16 +13,16 @@ import {
 import { EnumValue } from '../model/enumFactory.js';
 
 /**
- * Control Plane (gestão) — `WebhookEndpoints` (6 rotas reais). Sempre Member JWT — não aceita API
- * Key hoje (Known Gap real, ver SDK_CAPABILITY_SPEC.md §12.4). Verificação de assinatura em si
- * (`verifyWebhookSignature`) nunca faz chamada HTTP.
+ * Control Plane (management) -- `WebhookEndpoints` (6 real routes). Always Member JWT -- doesn't
+ * accept an API Key today (a real Known Gap, see SDK_CAPABILITY_SPEC.md §12.4). Signature
+ * verification itself (`verifyWebhookSignature`) never makes an HTTP call.
  */
 export class WebhookEndpointsResource extends ResourceSupport {
   constructor(transport: HttpTransport) {
     super(transport);
   }
 
-  /** `secret` só é retornado aqui — guarde-o imediatamente, nunca recuperável depois. */
+  /** `secret` is only ever returned here -- save it immediately, it can never be retrieved later. */
   create(organizationId: string, url: string): Promise<ConfigureWebhookEndpointResult> {
     return this.execute(
       postRequest(`/v1/organizations/${organizationId}/webhook-endpoints`, this.toJson({ url }), false),
@@ -38,7 +38,7 @@ export class WebhookEndpointsResource extends ResourceSupport {
     return this.execute(getRequest(`/v1/webhook-endpoints/${webhookEndpointId}`), mapWebhookEndpointResponse);
   }
 
-  /** Novo `secret` — o anterior deixa de validar assinaturas imediatamente. */
+  /** New `secret` -- the previous one stops validating signatures immediately. */
   rotateSecret(webhookEndpointId: string): Promise<RotateWebhookEndpointSecretResult> {
     return this.execute(postRequest(`/v1/webhook-endpoints/${webhookEndpointId}/rotate-secret`, undefined, false), mapRotateWebhookEndpointSecretResult);
   }
@@ -48,8 +48,8 @@ export class WebhookEndpointsResource extends ResourceSupport {
   }
 
   /**
-   * `status` é enviado como NOME (string, case-insensitive) na query string — diferente do filtro
-   * de `AssetNetworkCatalog` que usa inteiro (confirmado em código-fonte:
+   * `status` is sent as the NAME (string, case-insensitive) in the query string -- unlike
+   * `AssetNetworkCatalog`'s filter, which uses an integer (confirmed in source:
    * `Enum.Parse<WebhookDeliveryStatus>(status, ignoreCase: true)`).
    */
   listDeliveries(webhookEndpointId: string, eventType: string | undefined, status: EnumValue<number> | undefined): Promise<WebhookDeliveryResponse[]> {

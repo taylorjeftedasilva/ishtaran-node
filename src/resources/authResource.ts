@@ -4,9 +4,9 @@ import { BearerTokenHolder } from '../auth/bearerTokenHolder.js';
 import { TokenResult, SignUpResponse, mapTokenResult, mapSignUpResponse } from '../model/controlPlane.js';
 
 /**
- * Control Plane — `/v1/auth/*` (5 rotas reais). {@link login} preenche automaticamente o
- * {@link BearerTokenHolder} do client, usado por `AuthenticatingTransport` em toda chamada
- * subsequente de Control Plane — o consumidor nunca precisa repassar o token manualmente.
+ * Control Plane -- `/v1/auth/*` (5 real routes). {@link login} automatically fills the client's
+ * {@link BearerTokenHolder}, used by `AuthenticatingTransport` on every subsequent Control Plane
+ * call -- the caller never has to pass the token manually.
  */
 export class AuthResource extends ResourceSupport {
   constructor(transport: HttpTransport, private readonly bearerTokenHolder: BearerTokenHolder) {
@@ -50,7 +50,7 @@ export class AuthResource extends ResourceSupport {
     );
   }
 
-  /** Sem chamada HTTP — permite limpar a sessão local do client. */
+  /** No HTTP call -- lets the caller clear the client's local session. */
   logout(): void {
     this.bearerTokenHolder.clear();
   }

@@ -1,25 +1,24 @@
 # Security
 
-Ver `SECURITY_REVIEW.md` para o checklist formal completo.
+See `SECURITY_REVIEW.md` for the full formal checklist.
 
-## Segredos nunca vazam
+## Secrets never leak
 
-`apiKey`/`endpointSecret`/tokens nunca aparecem em log, exceção, ou serialização.
-`describeConfig()` mascara a API Key. Logging opt-in nunca loga `Authorization`/`X-Api-Key` em
-texto puro nem o corpo bruto.
+`apiKey`/`endpointSecret`/tokens never appear in logs, exceptions, or serialization.
+`describeConfig()` masks the API Key. Opt-in logging never logs
+`Authorization`/`X-Api-Key` in plain text nor the raw body.
 
 ## TLS
 
-Verificado por padrão (comportamento nativo do `fetch`), sem switch de desabilitar exposto por
-este SDK.
+Verified by default (native `fetch` behavior), with no disable switch exposed by this SDK.
 
 ## Webhook
 
-`node:crypto.timingSafeEqual` (tempo constante real), valida timestamp contra replay, nunca loga o
-secret.
+`node:crypto.timingSafeEqual` (real constant time), validates the timestamp against replay,
+never logs the secret.
 
-## Dependências
+## Dependencies
 
-Mínimas: `lossless-json` (única dependência de produção — precisão de dinheiro, ver
-`SDK_CAPABILITY_SPEC.md` §11.1). `node:crypto`/`node:fetch` nativos, zero dependência de terceiros
-para transporte/HMAC.
+Minimal: `lossless-json` (the only production dependency — money precision, see
+`SDK_CAPABILITY_SPEC.md` §11.1). Native `node:crypto`/`node:fetch`, zero third-party
+dependency for transport/HMAC.

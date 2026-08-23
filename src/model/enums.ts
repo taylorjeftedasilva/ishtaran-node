@@ -1,11 +1,11 @@
 import { createEnum } from './enumFactory.js';
 
 /**
- * Ver SDK_CAPABILITY_SPEC.md §11.3 para a tabela completa nome↔valor extraída literalmente dos
- * enums C# reais. Grupo B = inteiro bruto no JSON; Grupo A = string legível.
+ * See SDK_CAPABILITY_SPEC.md §11.3 for the full name<->value table extracted literally from the
+ * real C# enums. Group B = raw integer in JSON; Group A = readable string.
  */
 
-// ---- Grupo B (inteiro) ----
+// ---- Group B (integer) ----
 export const DepositStatus = createEnum<number>({
   DETECTED: 0, CONFIRMING: 1, CONFIRMED: 2, UNDER_REVIEW: 3, REORG_DETECTED: 4, REJECTED: 5,
 });
@@ -34,12 +34,14 @@ export const EntryNature = createEnum<number>({ AVAILABLE: 0, PENDING: 1, RESERV
 export const ConditionOperator = createEnum<number>({ EQUALS: 1, GREATER_THAN_OR_EQUAL: 2, LESS_THAN_OR_EQUAL: 3 });
 export const EventSource = createEnum<number>({ APPLICATION: 1, PLATFORM_TIMER: 2, MANUAL_REVIEW: 3 });
 export const SimulatedBroadcastOutcome = createEnum<number>({ ACCEPTED: 1, FAILED: 2 });
-/** Só usado em REQUEST (CreateEnvironmentRequest.type) — sem EnvironmentResponse real na API. */
+/** Only used in REQUEST (CreateEnvironmentRequest.type) -- there is no real EnvironmentResponse in the API. */
 export const EnvironmentType = createEnum<number>({ SANDBOX: 1, PRODUCTION: 2 });
-/** Só usado em REQUEST (InviteMemberRequest.role/AssignRoleRequest.newRole) — resposta é Grupo A (string). */
-export const MemberRoleRequest = createEnum<number>({ OWNER: 1, ADMIN: 2, FINANCEIRO: 3, LEITURA: 4 });
+/** ExecutionCustody.Contracts.Enums.DerivationScheme (SPEC-021, checkpoint 8) -- wire-format only, Group B. */
+export const DerivationScheme = createEnum<number>({ TRON_BIP44_HARDENED_ACCOUNT: 1 });
+/** Only used in REQUEST (InviteMemberRequest.role/AssignRoleRequest.newRole) -- the response is Group A (string). */
+export const MemberRoleRequest = createEnum<number>({ OWNER: 1, ADMIN: 2, FINANCE: 3, READ_ONLY: 4 });
 
-// ---- Grupo A (string) ----
+// ---- Group A (string) ----
 export const AccountStatus = createEnum<string>({ ACTIVE: 'Active', FROZEN: 'Frozen', CLOSED: 'Closed' });
 export const ApplicationStatus = createEnum<string>({ ACTIVE: 'Active', SUSPENDED: 'Suspended', ARCHIVED: 'Archived' });
 export const OrganizationStatus = createEnum<string>({ ACTIVE: 'Active', SUSPENDED: 'Suspended', CLOSED: 'Closed' });

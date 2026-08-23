@@ -1,8 +1,8 @@
 /**
- * `RotateApiKeyRequest.OverlapWindow` é um `TimeSpan` real do .NET (sem converter customizado
- * registrado — confirmado via grep em `OrganizationTenancy.Contracts`), serializado no formato
- * constante "c" do `System.Text.Json` nativo desde .NET 6: `[-][d.]hh:mm:ss[.fffffff]`. Nunca usar
- * o formato ISO-8601 de `Duration.toISOString()` aqui — quebraria a chamada real.
+ * `RotateApiKeyRequest.OverlapWindow` is a real .NET `TimeSpan` (no custom converter registered
+ * -- confirmed via a grep in `OrganizationTenancy.Contracts`), serialized in `System.Text.Json`'s
+ * constant "c" format, native since .NET 6: `[-][d.]hh:mm:ss[.fffffff]`. Never use
+ * `Duration.toISOString()`'s ISO-8601 format here -- it would break the real call.
  */
 export function formatDotNetTimeSpan(totalMs: number): string {
   const totalSeconds = Math.floor(totalMs / 1000);

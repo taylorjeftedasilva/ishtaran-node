@@ -11,9 +11,9 @@ import {
 } from '../model/controlPlane.js';
 
 /**
- * Control Plane — `Organizations` (6 rotas reais). Sempre Member JWT (nunca API Key — ver
- * SDK_CAPABILITY_SPEC.md §4). `create`/`createApplication` usam idempotência via HEADER
- * `Idempotency-Key` — diferente do padrão de campo de corpo dos módulos financeiros (ver
+ * Control Plane -- `Organizations` (6 real routes). Always Member JWT (never an API Key -- see
+ * SDK_CAPABILITY_SPEC.md §4). `create`/`createApplication` use idempotency via the
+ * `Idempotency-Key` HEADER -- unlike the body-field pattern of the financial modules (see
  * SDK_CAPABILITY_SPEC.md §9).
  */
 export class OrganizationsResource extends ResourceSupport {
@@ -21,7 +21,7 @@ export class OrganizationsResource extends ResourceSupport {
     super(transport);
   }
 
-  /** Única rota real sem autenticação — ponto de entrada do sistema. */
+  /** The only real unauthenticated route -- the system's entry point. */
   create(name: string, idempotencyKey?: string): Promise<CreatedResourceResponse> {
     const request = withHeader(
       postRequest('/v1/organizations', this.toJson({ name }), false),

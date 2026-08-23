@@ -1,8 +1,9 @@
 import { HttpTransport, IshtaranHttpRequest, IshtaranHttpResponse } from './types.js';
 
 /**
- * Transporte em memória, sem rede — usado por todo teste de `resources/*`/retry/erro. Existe
- * exatamente para cumprir o requisito do brief de uma abstração de HTTP testável sem rede real.
+ * In-memory transport, no network -- used by every `resources/*`/retry/error test. Exists
+ * precisely to fulfill the brief's requirement of an HTTP abstraction testable without real
+ * network.
  */
 export class FakeHttpTransport implements HttpTransport {
   private queuedResponders: Array<(req: IshtaranHttpRequest) => IshtaranHttpResponse> = [];
@@ -35,7 +36,7 @@ export class FakeHttpTransport implements HttpTransport {
     if (this.defaultResponder) {
       return this.defaultResponder(request);
     }
-    throw new Error('Nenhuma resposta configurada em FakeHttpTransport');
+    throw new Error('No response configured in FakeHttpTransport');
   }
 
   get requestCount(): number {

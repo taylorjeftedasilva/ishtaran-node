@@ -40,7 +40,7 @@ export function mapWebhookDeliveryResponse(raw: unknown): WebhookDeliveryRespons
     webhookDeliveryId: stringFieldOrNull(raw, 'webhookDeliveryId')!,
     webhookEndpointId: stringFieldOrNull(raw, 'webhookEndpointId')!,
     eventType: stringFieldOrNull(raw, 'eventType'),
-    // sequenceNumber é int64 -- string preserva precisão mesmo além de Number.MAX_SAFE_INTEGER.
+    // sequenceNumber is int64 -- a string preserves precision even beyond Number.MAX_SAFE_INTEGER.
     sequenceNumber: String(field(raw, 'sequenceNumber')),
     status: WebhookDeliveryStatus.fromRaw(Number(field(raw, 'status'))),
     attemptCount: Number(field(raw, 'attemptCount')),
@@ -55,7 +55,7 @@ export function mapWebhookDeliveryResponse(raw: unknown): WebhookDeliveryRespons
 
 export interface ConfigureWebhookEndpointResult {
   webhookEndpointId: string;
-  /** Só é exibido nesta resposta — nunca recuperável depois (mesmo invariante de GenerateApiKeyResult). */
+  /** Only ever shown in this response -- never retrievable later (same invariant as GenerateApiKeyResult). */
   secret: string | null;
 }
 

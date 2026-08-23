@@ -13,6 +13,7 @@ import { ApiKeysResource } from './resources/apiKeysResource.js';
 import { MembersResource } from './resources/membersResource.js';
 import { AssetNetworkCatalogResource } from './resources/assetNetworkCatalogResource.js';
 import { AccountsResource } from './resources/accountsResource.js';
+import { AccountHoldersResource } from './resources/accountHoldersResource.js';
 import { TransactionsResource } from './resources/transactionsResource.js';
 import { DepositsResource } from './resources/depositsResource.js';
 import { LedgerResource } from './resources/ledgerResource.js';
@@ -25,6 +26,8 @@ import { EventsResource } from './resources/eventsResource.js';
 import { SandboxResource } from './resources/sandboxResource.js';
 import { WebhookEndpointsResource } from './resources/webhookEndpointsResource.js';
 import { WebhookDeliveriesResource } from './resources/webhookDeliveriesResource.js';
+import { WalletsResource } from './resources/walletsResource.js';
+import { SigningRequestsResource } from './resources/signingRequestsResource.js';
 import { BalanceResponse, ParticipantInput, WithdrawalResponse } from './model/dataPlane.js';
 import { PaymentIntentStatus, TransactionStatus } from './model/enums.js';
 import { verifyWebhookSignature } from './webhook/webhookSignatureVerifier.js';
@@ -49,8 +52,8 @@ export interface EasyPaymentResult {
 }
 
 /**
- * Fachada pública única do SDK. Compõe Core (`resources.*`) e Easy Mode sobre o MESMO transporte
- * HTTP — Easy Mode nunca duplica lógica de negócio, só combina chamadas Core (ver
+ * Single public facade of the SDK. Composes Core (`resources.*`) and Easy Mode over the SAME
+ * HTTP transport -- Easy Mode never duplicates business logic, it only combines Core calls (see
  * SDK_CAPABILITY_SPEC.md §5).
  */
 export class IshtaranClient {
@@ -62,6 +65,8 @@ export class IshtaranClient {
   readonly members: MembersResource;
   readonly assetNetworkCatalog: AssetNetworkCatalogResource;
   readonly accounts: AccountsResource;
+  /** DEC-032 -- self-service, isolated `AccountHolder` session (never shares a token with the Member/API Key of this same instance). */
+  readonly accountHolders: AccountHoldersResource;
   readonly transactions: TransactionsResource;
   readonly deposits: DepositsResource;
   readonly ledger: LedgerResource;
@@ -74,11 +79,23 @@ export class IshtaranClient {
   readonly sandbox: SandboxResource;
   readonly webhookEndpoints: WebhookEndpointsResource;
   readonly webhookDeliveries: WebhookDeliveriesResource;
+  /** SPEC-018/021, checkpoint 8 -- only the PUBLIC extended key ever travels through this client (INV-SC-01). */
+  readonly wallets: WalletsResource;
+  /** SPEC-019/020/021, checkpoint 8 -- the SDK signs locally (`wallet/signer.js`) and submits it back. */
+  readonly signingRequests: SigningRequestsResource;
 
   private constructor(rawTransport: HttpTransport, apiKey: string | undefined, retryPolicy: RetryPolicy) {
     const bearerTokenHolder = new BearerTokenHolder();
     const authenticated = new AuthenticatingTransport(rawTransport, apiKey, bearerTokenHolder);
     const transport = new RetryingTransport(authenticated, retryPolicy);
+
+    // DEC-032 -- dedicated transport for AccountHolder, never the Organization's `apiKey` nor the
+    // Member `bearerTokenHolder` above: full domain separation between the two principals, same
+    // reasoning as `AccountHolderJwtScheme` never sharing a key with `MemberJwtScheme` in the
+    // backend.
+    const accountHolderTokenHolder = new BearerTokenHolder();
+    const accountHolderAuthenticated = new AuthenticatingTransport(rawTransport, undefined, accountHolderTokenHolder);
+    const accountHolderTransport = new RetryingTransport(accountHolderAuthenticated, retryPolicy);
 
     this.auth = new AuthResource(transport, bearerTokenHolder);
     this.organizations = new OrganizationsResource(transport);
@@ -88,6 +105,7 @@ export class IshtaranClient {
     this.members = new MembersResource(transport);
     this.assetNetworkCatalog = new AssetNetworkCatalogResource(transport);
     this.accounts = new AccountsResource(transport);
+    this.accountHolders = new AccountHoldersResource(accountHolderTransport, accountHolderTokenHolder);
     this.transactions = new TransactionsResource(transport);
     this.deposits = new DepositsResource(transport);
     this.ledger = new LedgerResource(transport);
@@ -100,6 +118,8 @@ export class IshtaranClient {
     this.sandbox = new SandboxResource(transport);
     this.webhookEndpoints = new WebhookEndpointsResource(transport);
     this.webhookDeliveries = new WebhookDeliveriesResource(transport);
+    this.wallets = new WalletsResource(transport);
+    this.signingRequests = new SigningRequestsResource(transport);
   }
 
   static create(input: IshtaranClientConfigInput): IshtaranClient {
@@ -112,8 +132,8 @@ export class IshtaranClient {
   }
 
   /**
-   * Construtor alternativo para testes — injeta um {@link HttpTransport} falso (sem rede), sem
-   * retry (já tem suíte própria dedicada — `retryingTransport.test.ts`).
+   * Alternative constructor for tests -- injects a fake {@link HttpTransport} (no network), no
+   * retry (already has its own dedicated suite -- `retryingTransport.test.ts`).
    */
   static forTesting(transport: HttpTransport): IshtaranClient {
     return new IshtaranClient(transport, undefined, disabledRetryPolicy());
@@ -121,14 +141,14 @@ export class IshtaranClient {
 
   // ---- Easy Mode ----
 
-  /** Passagem direta para `ledger.getBalance()` — sem transformação de negócio (SDK_CAPABILITY_SPEC.md §5). */
+  /** Direct pass-through to `ledger.getBalance()` -- no business transformation (SDK_CAPABILITY_SPEC.md §5). */
   getBalance(accountId: string, assetNetworkId: string): Promise<BalanceResponse> {
     return this.ledger.getBalance(accountId, assetNetworkId);
   }
 
   /**
-   * Compõe `withdrawals.createDestination()` (se necessário) + `.request()` — nunca esconde a
-   * Network Fee, sempre devolve o `withdrawalId` real do Core.
+   * Composes `withdrawals.createDestination()` (if needed) + `.request()` -- never hides the
+   * Network Fee, always returns the real Core `withdrawalId`.
    */
   async withdraw(
     organizationId: string,
@@ -154,8 +174,9 @@ export class IshtaranClient {
   }
 
   /**
-   * Compõe `transactions.create()` + `deposits.createPaymentIntent()` + um GET de acompanhamento
-   * para obter o `depositAddress` real (só exposto pelo GET dedicado, não pelo POST de criação).
+   * Composes `transactions.create()` + `deposits.createPaymentIntent()` + a follow-up GET to
+   * obtain the real `depositAddress` (only exposed by the dedicated GET, not by the creation
+   * POST).
    */
   async receivePayment(
     organizationId: string,
@@ -190,8 +211,8 @@ export class IshtaranClient {
   }
 
   /**
-   * Polling seguro — nunca infinito, sempre com `timeoutMs`/`pollIntervalMs` explícitos. Termina
-   * quando o Payment Intent sai de `PENDING`/`PARTIALLY_PAID`.
+   * Safe polling -- never infinite, always with explicit `timeoutMs`/`pollIntervalMs`. Ends when
+   * the Payment Intent leaves `PENDING`/`PARTIALLY_PAID`.
    */
   waitForPayment(transactionId: string, paymentIntentId: string, timeoutMs: number, pollIntervalMs: number): Promise<EasyPaymentResult> {
     return pollUntil(
@@ -204,7 +225,7 @@ export class IshtaranClient {
     );
   }
 
-  /** Sem chamada HTTP — cálculo local (ver SDK_CAPABILITY_SPEC.md §10). */
+  /** No HTTP call -- local computation (see SDK_CAPABILITY_SPEC.md §10). */
   verifyWebhookSignature(rawBody: string, signatureHeader: string, timestampHeader: string, endpointSecret: string): boolean {
     return verifyWebhookSignature(rawBody, signatureHeader, timestampHeader, endpointSecret);
   }

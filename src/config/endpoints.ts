@@ -1,10 +1,11 @@
 import { Environment } from './environment.js';
 
 /**
- * Base URLs centralizadas — nunca strings de URL espalhadas pelo SDK. {@link LOCAL} é o único
- * default real conhecido hoje (docker-compose local). Sandbox/Production não têm DNS real
- * provisionado ainda (terraform apply nunca rodou — ver SDK_CAPABILITY_SPEC.md §2): resolver essas
- * duas sem `baseUrl` explícito é um erro de configuração, nunca um fallback silencioso inventado.
+ * Centralized base URLs -- never URL strings scattered across the SDK. {@link LOCAL_BASE_URL} is
+ * the only real known default today (local docker-compose). Sandbox/Production don't have real
+ * DNS provisioned yet (terraform apply has never run -- see SDK_CAPABILITY_SPEC.md §2): resolving
+ * either of those without an explicit `baseUrl` is a configuration error, never an invented
+ * silent fallback.
  */
 export const LOCAL_BASE_URL = 'http://localhost:8080';
 
@@ -16,8 +17,8 @@ export function resolveBaseUrl(environment: Environment, explicitBaseUrl: string
     return LOCAL_BASE_URL;
   }
   throw new Error(
-    `baseUrl explícito é obrigatório para Environment.${environment} — nenhuma URL real de ` +
-      'Sandbox/Production foi provisionada ainda (ver SDK_CAPABILITY_SPEC.md §2). Configure ' +
-      'IshtaranClientConfig.baseUrl explicitamente.',
+    `An explicit baseUrl is required for Environment.${environment} -- no real Sandbox/Production ` +
+      'URL has been provisioned yet (see SDK_CAPABILITY_SPEC.md §2). Configure ' +
+      'IshtaranClientConfig.baseUrl explicitly.',
   );
 }

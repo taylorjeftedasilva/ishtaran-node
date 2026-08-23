@@ -2,7 +2,7 @@ import { ResourceSupport } from './resourceSupport.js';
 import { HttpTransport, getRequest, postRequest } from '../http/types.js';
 import { CreateEventTypeResult, EventTypeResponse, mapCreateEventTypeResult, mapEventTypeResponse } from '../model/workflow.js';
 
-/** Data Plane — `EventTypes` (2 rotas reais, mesmo módulo `WorkflowRules`). */
+/** Data Plane -- `EventTypes` (2 real routes, same `WorkflowRules` module). */
 export class EventTypesResource extends ResourceSupport {
   constructor(transport: HttpTransport) {
     super(transport);

@@ -22,9 +22,9 @@ const TERMINAL_STATUSES = new Set([
 ]);
 
 /**
- * Data Plane — `Withdrawals` (7 rotas reais). {@link quote} nunca escreve nada (leitura pura —
- * ver SDK_CAPABILITY_SPEC.md §5); {@link request} sempre expõe `estimatedNetworkFee`/
- * `estimatedRecipientAmount` na resposta, nunca esconde a Network Fee.
+ * Data Plane -- `Withdrawals` (7 real routes). {@link quote} never writes anything (pure read --
+ * see SDK_CAPABILITY_SPEC.md §5); {@link request} always exposes `estimatedNetworkFee`/
+ * `estimatedRecipientAmount` in the response, never hiding the Network Fee.
  */
 export class WithdrawalsResource extends ResourceSupport {
   constructor(transport: HttpTransport) {
@@ -70,7 +70,7 @@ export class WithdrawalsResource extends ResourceSupport {
     return this.execute(getRequest(`/v1/withdrawals/${withdrawalId}`), mapWithdrawalResponse);
   }
 
-  /** `skip`/`take` são paginação real (um dos únicos 2 endpoints do SDK com paginação de verdade). */
+  /** `skip`/`take` are real pagination (one of the SDK's only 2 endpoints with genuine pagination). */
   list(
     organizationId: string,
     options: { status?: EnumValue<number>; from?: string; to?: string; skip?: number; take?: number } = {},
@@ -84,7 +84,7 @@ export class WithdrawalsResource extends ResourceSupport {
     return this.executeList(getRequest(`/v1/organizations/${organizationId}/withdrawals?${query}`), mapWithdrawalResponse);
   }
 
-  /** Iterador lazy (async generator) — ver SDK_CAPABILITY_SPEC.md §12.7. */
+  /** Lazy iterator (async generator) -- see SDK_CAPABILITY_SPEC.md §12.7. */
   listAll(
     organizationId: string,
     options: { status?: EnumValue<number>; from?: string; to?: string },
@@ -102,7 +102,7 @@ export class WithdrawalsResource extends ResourceSupport {
     return this.executeNoContent(postRequest(`/v1/withdrawals/${withdrawalId}/retry-broadcast`, undefined, false));
   }
 
-  /** Polling seguro, nunca infinito — termina em Completed/Rejected/Cancelled/BroadcastFailed. */
+  /** Safe polling, never infinite -- ends at Completed/Rejected/Cancelled/BroadcastFailed. */
   waitFor(withdrawalId: string, timeoutMs: number, pollIntervalMs: number): Promise<WithdrawalResponse> {
     return pollUntil(
       () => this.get(withdrawalId),

@@ -3,8 +3,8 @@ import { mapError } from '../error/errorMapper.js';
 import { parseLossless } from '../util/json.js';
 
 /**
- * Base comum de todo resource — execução de request + parsing lossless + mapeamento de erro
- * centralizados, para nenhum resource duplicar essa lógica.
+ * Common base for every resource -- centralizes request execution + lossless parsing + error
+ * mapping, so no resource duplicates this logic.
  */
 export abstract class ResourceSupport {
   protected constructor(protected readonly transport: HttpTransport) {}
@@ -31,7 +31,7 @@ export abstract class ResourceSupport {
     }
     const raw = parseLossless(response.body);
     if (!Array.isArray(raw)) {
-      throw new Error('Resposta esperada como array, recebido outro formato');
+      throw new Error('Expected an array response, got a different format');
     }
     return raw.map(mapper);
   }
@@ -50,7 +50,7 @@ export abstract class ResourceSupport {
 
 export function field(raw: unknown, name: string): unknown {
   if (raw === null || typeof raw !== 'object') {
-    throw new Error(`Esperado objeto para ler o campo "${name}"`);
+    throw new Error(`Expected an object to read field "${name}"`);
   }
   return (raw as Record<string, unknown>)[name];
 }
@@ -58,7 +58,7 @@ export function field(raw: unknown, name: string): unknown {
 export function stringField(raw: unknown, name: string): string {
   const value = field(raw, name);
   if (typeof value !== 'string') {
-    throw new Error(`Campo "${name}" deveria ser string`);
+    throw new Error(`Field "${name}" should be a string`);
   }
   return value;
 }
@@ -71,7 +71,7 @@ export function stringFieldOrNull(raw: unknown, name: string): string | null {
 export function boolField(raw: unknown, name: string): boolean {
   const value = field(raw, name);
   if (typeof value !== 'boolean') {
-    throw new Error(`Campo "${name}" deveria ser boolean`);
+    throw new Error(`Field "${name}" should be a boolean`);
   }
   return value;
 }
@@ -82,7 +82,7 @@ export function arrayField<T>(raw: unknown, name: string, mapper: (item: unknown
     return [];
   }
   if (!Array.isArray(value)) {
-    throw new Error(`Campo "${name}" deveria ser array`);
+    throw new Error(`Field "${name}" should be an array`);
   }
   return value.map(mapper);
 }
@@ -93,7 +93,7 @@ export function arrayFieldOrNull<T>(raw: unknown, name: string, mapper: (item: u
     return null;
   }
   if (!Array.isArray(value)) {
-    throw new Error(`Campo "${name}" deveria ser array`);
+    throw new Error(`Field "${name}" should be an array`);
   }
   return value.map(mapper);
 }

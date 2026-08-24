@@ -105,20 +105,19 @@ This is deliberately not a full reference — see [FEATURES.md](FEATURES.md) and
 
 ## Installation
 
-Not yet published on npm — package registry distribution is planned alongside the public Sandbox
-launch (see [Package distribution roadmap](#package-distribution-roadmap)). The source is public
-today:
-
 ```bash
-npm install github:taylorjeftedasilva/ishtaran-node
+npm install @ishtaran/sdk
 ```
 
-Or to build and consume locally:
+`0.1.0` is a real, published **Development Preview** release on npm -- verified live with a real
+`npm install` from a clean environment. See [CHANGELOG.md](CHANGELOG.md) for what's in it.
+
+Or for local development:
 
 ```bash
 npm install && npm run build && npm pack
 # in your project:
-npm install /path/to/ishtaran-sdk-1.0.0-SNAPSHOT.tgz
+npm install /path/to/ishtaran-sdk-0.1.0.tgz
 ```
 
 Requires **Node.js 18+**. ESM and CJS supported (dual build).
@@ -201,9 +200,9 @@ monetary field.
 
 ## Package distribution roadmap
 
-Not yet published on a package registry. Alongside the public Sandbox launch, the plan is to
-distribute this SDK through npm. Until then, build/install directly from this source repository
-— see [Installation](#installation) above.
+`0.1.0` (Development Preview) is published on npm — see [Installation](#installation). Future
+releases follow the same path: a reviewed, tested commit gets a new semver tag, and npm Trusted
+Publishing (OIDC, no long-lived token) publishes it automatically.
 
 ## License
 

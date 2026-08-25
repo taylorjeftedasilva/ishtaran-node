@@ -16,10 +16,11 @@ const client = IshtaranClient.create({
 | Environment | Default | Explicit `baseUrl`? |
 |---|---|---|
 | `Local` | `http://localhost:8080` | No |
-| `Sandbox`/`Production` | **none** — infra not yet provisioned | **Yes, required** |
+| `Sandbox` | `https://sandbox-api.ishtaran.com` (the real, live public Sandbox) | No |
+| `Production` | **none** — infra not yet provisioned | **Yes, required** |
 
-Constructing without `baseUrl` for `Sandbox`/`Production` throws immediately — it never points
-to a made-up URL.
+Constructing without `baseUrl` for `Production` throws immediately — it never points to a
+made-up URL. An explicit `baseUrl` always overrides the `Sandbox` default too.
 
 ## Known limitation — timeout
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildClientConfig, describeConfig } from './clientConfig.js';
 import { Environment } from './environment.js';
-import { LOCAL_BASE_URL } from './endpoints.js';
+import { LOCAL_BASE_URL, SANDBOX_BASE_URL } from './endpoints.js';
 
 describe('buildClientConfig', () => {
   it('resolves Environment.Local to the real local default without explicit baseUrl', () => {
@@ -9,8 +9,9 @@ describe('buildClientConfig', () => {
     expect(config.baseUrl).toBe(LOCAL_BASE_URL);
   });
 
-  it('throws for Environment.Sandbox without explicit baseUrl (no real DNS provisioned yet)', () => {
-    expect(() => buildClientConfig({ environment: Environment.Sandbox })).toThrow();
+  it('resolves Environment.Sandbox to the real sandbox default without explicit baseUrl', () => {
+    const config = buildClientConfig({ environment: Environment.Sandbox });
+    expect(config.baseUrl).toBe(SANDBOX_BASE_URL);
   });
 
   it('throws for Environment.Production without explicit baseUrl', () => {

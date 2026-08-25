@@ -3,7 +3,7 @@
 ## 1. Install the dependency
 
 ```bash
-npm install @ishtaran/sdk   # once published; for now, see README.md for local consumption via tarball
+npm install @ishtaran/sdk
 ```
 
 ## 2. Build the client
@@ -13,12 +13,14 @@ import { IshtaranClient, Environment } from '@ishtaran/sdk';
 
 const client = IshtaranClient.create({
   apiKey: process.env.ISHTARAN_API_KEY,
-  environment: Environment.Local,
+  environment: Environment.Sandbox,
 });
 ```
 
-`Environment.Sandbox`/`Production` don't have a known real URL yet — use an explicit `baseUrl`
-(see [`CONFIGURATION.md`](CONFIGURATION.md)).
+`Environment.Sandbox` resolves to the real public Sandbox automatically — no `baseUrl` needed.
+`Environment.Production` doesn't have a known real URL yet — use an explicit `baseUrl` if you
+ever need to point at a self-hosted Local/other instance (see
+[`CONFIGURATION.md`](CONFIGURATION.md)).
 
 ## 3. Check a balance (Easy Mode)
 

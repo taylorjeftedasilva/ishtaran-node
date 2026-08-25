@@ -1,6 +1,6 @@
 {
   "name": "@ishtaran/sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Official TypeScript/Node.js SDK for the Ishtaran programmable financial platform API.",
   "license": "Apache-2.0",
   "type": "module",

@@ -1,19 +1,18 @@
-// 11 -- Full Sandbox flow: simulate a Deposit confirmation and a withdrawal broadcast.
+// 11 -- Full Sandbox flow: credits test balance via the Faucet and confirms it. Never works
+// against real Production (the backend rejects simulations outside a Sandbox-type Environment).
 import { IshtaranClient, Environment } from '@ishtaran/sdk';
 
-const client = IshtaranClient.create({ apiKey: process.env.ISHTARAN_API_KEY, environment: Environment.Local });
+const client = IshtaranClient.create({ apiKey: process.env.ISHTARAN_API_KEY, environment: Environment.Sandbox });
 
-const applicationId = process.env.ISHTARAN_APPLICATION_ID!;
-const networkId = process.env.ISHTARAN_NETWORK_ID!;
-const walletId = process.env.ISHTARAN_WALLET_ID!;
-const derivationReference = process.env.ISHTARAN_DERIVATION_REFERENCE!;
+const environmentId = process.env.ISHTARAN_SANDBOX_ENVIRONMENT_ID!;
+const assetNetworkId = process.env.ISHTARAN_ASSET_NETWORK_ID!;
 
-const allocated = await client.wallets.allocateDepositAddress(applicationId, networkId);
-console.log('address=', allocated.address, 'derivationReference=', allocated.derivationReference);
+const observedAddress = await client.sandbox.faucet(environmentId, 'TDepositAddressReal', assetNetworkId, '100');
+console.log('sandboxObservedAddressId=', observedAddress.sandboxObservedAddressId);
 
 // Simulated confirmation -- the real Deposit will be processed via the Outbox (asynchronous).
-const confirmation = await client.sandbox.simulateDepositConfirmation(networkId, allocated.derivationReference, '100.00');
-console.log('Simulated confirmation:', confirmation.transactionHash);
+await client.sandbox.simulateConfirmation(environmentId, observedAddress.sandboxObservedAddressId, 3, true);
+console.log('Confirmation simulated -- the real Deposit will be processed via the Outbox (asynchronously).');
 
-const broadcast = await client.sandbox.simulateWithdrawalBroadcast(walletId, derivationReference);
-console.log('Simulated broadcast:', broadcast.broadcastReference);
+const treasuryBalance = await client.sandbox.getTreasuryBalance(environmentId, assetNetworkId);
+console.log('Observed Treasury:', treasuryBalance.balance);

@@ -1,6 +1,7 @@
 import { ResourceSupport } from './resourceSupport.js';
-import { HttpTransport, postRequest } from '../http/types.js';
+import { HttpTransport, postRequest, withHeader } from '../http/types.js';
 import { BearerTokenHolder } from '../auth/bearerTokenHolder.js';
+import { resolveIdempotencyKey } from '../idempotency/idempotencyKeyGenerator.js';
 import { TokenResult, SignUpResponse, mapTokenResult, mapSignUpResponse } from '../model/controlPlane.js';
 
 /**
@@ -22,9 +23,20 @@ export class AuthResource extends ResourceSupport {
     return result;
   }
 
-  async signUp(organizationName: string, email: string, password: string): Promise<SignUpResponse> {
+  /**
+   * `POST /v1/auth/signup` requires an `Idempotency-Key` header (400 `IDEMPOTENCY_KEY_REQUIRED`
+   * otherwise, real backend behavior -- `CompositionRoot.EndpointMapping.SignUpEndpoints`).
+   * Auto-generated when `idempotencyKey` is omitted, same convention as
+   * `OrganizationsResource.create`.
+   */
+  async signUp(organizationName: string, email: string, password: string, idempotencyKey?: string): Promise<SignUpResponse> {
     const body = this.toJson({ organizationName, email, password });
-    const result = await this.execute(postRequest('/v1/auth/signup', body, false), mapSignUpResponse);
+    const request = withHeader(
+      postRequest('/v1/auth/signup', body, false),
+      'Idempotency-Key',
+      resolveIdempotencyKey(idempotencyKey),
+    );
+    const result = await this.execute(request, mapSignUpResponse);
     if (result.token.success && result.token.accessToken) {
       this.bearerTokenHolder.set(result.token.accessToken);
     }

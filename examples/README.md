@@ -1,6 +1,6 @@
 # Ishtaran TypeScript SDK -- Examples
 
-13 numbered examples, real code (never pseudocode), verified with `tsc --noEmit` in this
+14 numbered examples, real code (never pseudocode), verified with `tsc --noEmit` in this
 module against the real SDK (`@ishtaran/sdk`, via `file:..`).
 
 | # | File | Demonstrates |
@@ -18,6 +18,7 @@ module against the real SDK (`@ishtaran/sdk`, via `file:..`).
 | 11 | `11-sandbox.ts` | Faucet + simulated confirmation (Sandbox) |
 | 12 | `12-account-holder-invitation.ts` | AccountHolder invitation + signup-and-claim (DEC-032) |
 | 13 | `13-self-custody-signing.ts` | Self-custody end to end: generates a local wallet, registers it, allocates an address, creates/signs/submits a `SigningRequest`, confirms the broadcast (SPEC-017-021) |
+| 14 | `14-marketplace-journey.ts` | Full marketplace journey, verified live against the real Sandbox: self-service signup, self-custody execution wallet, seller `AccountHolder` via invitation, buyer Payment Intent, deposit + confirmation, Settlement, and the real payout signed locally -- connects examples 01/03/12/13 into one closed cycle |
 
 ## Running
 

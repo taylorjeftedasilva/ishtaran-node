@@ -3,6 +3,26 @@
 Follows [SemVer](https://semver.org/). This is a **Development Preview** — 0.x versions may
 still change before a stable 1.0.0.
 
+## [0.1.2] — 2026-08-25
+
+- Fixed a real bug, found while building example 14: `authResource.signUp(...)` never sent the
+  `Idempotency-Key` header `POST /v1/auth/signup` requires — every real call failed with `400
+  IDEMPOTENCY_KEY_REQUIRED`. Self-service onboarding via this SDK never actually worked before
+  this fix. `signUp` now takes an optional 4th `idempotencyKey` argument, auto-generated when
+  omitted, same convention as `organizationsResource.create`. No breaking change.
+- Added `examples/14-marketplace-journey.ts`: a full marketplace payment, verified live against
+  the real Sandbox (self-service signup, a self-custody execution wallet, a seller
+  `AccountHolder`, a buyer Payment Intent, and a locally signed payout) -- connects several
+  existing examples into one closed cycle.
+- Fixed `examples/11-sandbox.ts`, which called `sandbox.simulateDepositConfirmation`/
+  `simulateWithdrawalBroadcast` -- neither ever existed on `SandboxResource`, so the example never
+  compiled. Rewritten against the real `faucet`/`simulateConfirmation`/`getTreasuryBalance`.
+- `CORE_API.md` corrected: documents `accountHolders`/self-custody resources it omitted, notes
+  that `accounts.authorizeApplication`/`freeze`/`unfreeze`/`close`/`revokeRelationship` reject an
+  API Key and require a Member session (found live, undocumented until now), and that a
+  Transaction reserves itself automatically once its deposit is confirmed -- no `reserve()` call
+  needed or valid in that path.
+
 ## [0.1.1] — 2026-08-25
 
 - `Environment.Sandbox` now resolves to the real public Sandbox (`https://sandbox-api.ishtaran.com`,

@@ -13,6 +13,10 @@ and `SDK_METHOD_MAP.md`). No invented endpoint, no admin-only/platform-only rout
 `client.accounts`, `client.transactions`, `client.deposits`, `client.ledger`, `client.settlements`,
 `client.refunds`, `client.withdrawals`, `client.workflows`/`eventTypes`/`events`, `client.sandbox`.
 
+**Except:** `accounts.authorizeApplication`/`freeze`/`unfreeze`/`close`/`revokeRelationship`
+reject an API Key and require a Member session (verified live, not documented anywhere else --
+`MemberPermissionPolicy.Require`, `AccountsEndpoints.cs`).
+
 ## AccountHolders (isolated session, own auth)
 
 `client.accountHolders` — the financial holder's global identity (`DEC-032`): `signUp`/`login`/
@@ -32,15 +36,23 @@ part of this module is the local signing flow, not the HTTP resource shape.
 
 ```typescript
 const account = await client.accounts.create(organizationId, 'customer-123');
-await client.accounts.authorizeApplication(account.accountId, applicationId);
+// authorizeApplication requires the Member client (`memberClient`), never the API Key one --
+// see the note above.
+await memberClient.accounts.authorizeApplication(organizationId, account.accountId, applicationId);
 
 const txn = await client.transactions.create(organizationId, applicationId, null, assetNetworkId, '100', [payer, recipient]);
 const intent = await client.deposits.createPaymentIntent(organizationId, txn.transactionId, assetNetworkId, '100', undefined);
 const fullIntent = await client.deposits.getPaymentIntent(intent.paymentIntentId);
 // fullIntent.depositAddress -- real address to watch on-chain
 
+// Once the deposit is confirmed, the Transaction reserves itself -- no explicit reserve() call
+// needed or valid in this path (verified live -- calling it here throws BR-TXN-002).
 const settlement = await client.settlements.executeSettlement(txn.transactionId);
 ```
+
+See [`examples/14-marketplace-journey.ts`](examples/14-marketplace-journey.ts) for this same flow
+run in full, including the Payment Intent → deposit → confirmation → self-custody payout signing
+this snippet omits.
 
 ## Real anonymous objects
 

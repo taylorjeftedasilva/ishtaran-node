@@ -1,6 +1,6 @@
 # Core API
 
-Complete, literal coverage of the real API — 83 routes, 16 modules (see `SDK_FEATURE_MATRIX.md`
+Complete, literal coverage of the real API — 100 routes, 16 modules (see `SDK_FEATURE_MATRIX.md`
 and `SDK_METHOD_MAP.md`). No invented endpoint, no admin-only/platform-only route exposed.
 
 ## Control Plane (always Member JWT)
@@ -12,6 +12,21 @@ and `SDK_METHOD_MAP.md`). No invented endpoint, no admin-only/platform-only rout
 
 `client.accounts`, `client.transactions`, `client.deposits`, `client.ledger`, `client.settlements`,
 `client.refunds`, `client.withdrawals`, `client.workflows`/`eventTypes`/`events`, `client.sandbox`.
+
+## AccountHolders (isolated session, own auth)
+
+`client.accountHolders` — the financial holder's global identity (`DEC-032`): `signUp`/`login`/
+`me`/`claimInvitation`/`signUpAndClaimInvitation`. Its session token is never shared with
+`client.auth` (Member) nor with the Organization's `X-Api-Key` on the same client instance — treat
+it as a third, independent authentication context. See [README.md § Self-custody /
+AccountHolders](README.md#what-this-sdk-does) for the identity model.
+
+## Self-custody (`ExecutionCustody`)
+
+`client.wallets` / `client.signingRequests` — wallet registration, deposit address allocation,
+`SigningRequest` creation/submission. Covered with a full worked example in
+[README.md § Self-custody](README.md#self-custody) rather than duplicated here — the interesting
+part of this module is the local signing flow, not the HTTP resource shape.
 
 ## Example — full flow without Easy Mode
 

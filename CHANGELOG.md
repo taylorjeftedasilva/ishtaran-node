@@ -3,7 +3,7 @@
 Follows [SemVer](https://semver.org/). This is a **Development Preview** — 0.x versions may
 still change before a stable 1.0.0.
 
-## [Unreleased]
+## [0.1.2] — 2026-08-29
 
 - Added `client.executionDestinations.register(organizationId, accountId, assetNetworkId,
   address)` (`POST /v1/organizations/{organizationId}/execution-destinations`) -- registers the
@@ -41,8 +41,6 @@ still change before a stable 1.0.0.
   1.00 minimum, 0.9% fee) was rejected even though Settlement's own Gross-Amount-level range check
   already passed. No SDK-visible API change -- documented here because it directly affects which
   amounts a real `executeSettlement()` call can now succeed with.
-
-## [0.1.2] — 2026-08-25
 
 - Fixed a real bug, found while building example 14: `authResource.signUp(...)` never sent the
   `Idempotency-Key` header `POST /v1/auth/signup` requires — every real call failed with `400

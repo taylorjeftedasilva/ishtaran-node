@@ -83,6 +83,24 @@ runnable flow (register a wallet, allocate a deposit address, create a `SigningR
 submit every leg), and [Self-Custody](https://ishtaran.com/docs/concepts/self-custody) for the
 complete protocol detail.
 
+### Execution destinations (required before a SelfCustody `Settlement` can execute)
+
+`client.executionDestinations.register` declares the real on-chain address a beneficiary
+`Account` receives funds at, for a given `AssetNetwork`. `settlements.executeSettlement` now
+resolves the destination for every beneficiary (and for the Platform Fee) before it builds a
+`SigningRequest` — if none is registered, the call fails fast with a clear error before any
+signing/broadcast starts, rather than silently reusing a withdrawal destination or guessing.
+First-registration-wins: a second call for the same `accountId`+`assetNetworkId` pair is rejected,
+never silently overwritten.
+
+```typescript
+const destination = await client.executionDestinations.register(organizationId, sellerAccountId, assetNetworkId, sellerAddress);
+```
+
+Once a `Settlement` moves to SelfCustody execution, `SettlementResponse.signingRequestId` is
+populated — fetch it with `client.signingRequests.get(signingRequestId)` to sign locally, the
+same flow as above.
+
 ## Current capabilities
 
 - Organizations / Applications / Environments
@@ -96,7 +114,7 @@ complete protocol detail.
 - Withdrawals
 - Webhooks
 - Self-custody: wallet generation/restore, public address derivation, `SigningRequest`
-  validation, local signing, signed transaction submission
+  validation, local signing, signed transaction submission, execution destination registration
 
 This is deliberately not a full reference — see [FEATURES.md](FEATURES.md) and the
 [API Reference](https://ishtaran.com/docs/api/ishtaran-api) for details.

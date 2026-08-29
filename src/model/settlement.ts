@@ -41,6 +41,8 @@ export interface SettlementResponse {
   pricingPolicyId: string;
   status: EnumValue<number>;
   entryGroupId: string | null;
+  /** DEC-037 -- populated only under SelfCustody, once SelfCustodySettlementExecutionStrategy creates a real SigningRequest (never under ManagedCustody, never before there's something to sign). Fetch it via `signingRequests.get(signingRequestId)` to sign locally. */
+  signingRequestId: string | null;
   splitAllocations: SettlementSplitAllocationResponse[];
   createdAt: string;
   executedAt: string | null;
@@ -61,6 +63,7 @@ export function mapSettlementResponse(raw: unknown): SettlementResponse {
     pricingPolicyId: stringFieldOrNull(raw, 'pricingPolicyId')!,
     status: SettlementStatus.fromRaw(Number(field(raw, 'status'))),
     entryGroupId: stringFieldOrNull(raw, 'entryGroupId'),
+    signingRequestId: stringFieldOrNull(raw, 'signingRequestId'),
     splitAllocations: arrayField(raw, 'splitAllocations', mapSplitAllocation),
     createdAt: stringField(raw, 'createdAt'),
     executedAt: stringFieldOrNull(raw, 'executedAt'),

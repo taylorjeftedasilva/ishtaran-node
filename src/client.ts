@@ -28,6 +28,7 @@ import { WebhookEndpointsResource } from './resources/webhookEndpointsResource.j
 import { WebhookDeliveriesResource } from './resources/webhookDeliveriesResource.js';
 import { WalletsResource } from './resources/walletsResource.js';
 import { SigningRequestsResource } from './resources/signingRequestsResource.js';
+import { ExecutionDestinationsResource } from './resources/executionDestinationsResource.js';
 import { BalanceResponse, ParticipantInput, WithdrawalResponse } from './model/dataPlane.js';
 import { PaymentIntentStatus, TransactionStatus } from './model/enums.js';
 import { verifyWebhookSignature } from './webhook/webhookSignatureVerifier.js';
@@ -83,6 +84,8 @@ export class IshtaranClient {
   readonly wallets: WalletsResource;
   /** SPEC-019/020/021, checkpoint 8 -- the SDK signs locally (`wallet/signer.js`) and submits it back. */
   readonly signingRequests: SigningRequestsResource;
+  /** DEC-037 -- registers a beneficiary's real receiving address, required before SelfCustody Settlement can execute. */
+  readonly executionDestinations: ExecutionDestinationsResource;
 
   private constructor(rawTransport: HttpTransport, apiKey: string | undefined, retryPolicy: RetryPolicy) {
     const bearerTokenHolder = new BearerTokenHolder();
@@ -120,6 +123,7 @@ export class IshtaranClient {
     this.webhookDeliveries = new WebhookDeliveriesResource(transport);
     this.wallets = new WalletsResource(transport);
     this.signingRequests = new SigningRequestsResource(transport);
+    this.executionDestinations = new ExecutionDestinationsResource(transport);
   }
 
   static create(input: IshtaranClientConfigInput): IshtaranClient {
@@ -181,6 +185,7 @@ export class IshtaranClient {
   async receivePayment(
     organizationId: string,
     applicationId: string,
+    environmentId: string,
     payerAccountId: string,
     recipientAccountId: string,
     assetNetworkId: string,
@@ -190,7 +195,7 @@ export class IshtaranClient {
       { accountId: payerAccountId, role: 'payer', isPayer: true },
       { accountId: recipientAccountId, role: 'recipient', isPayer: false },
     ];
-    const createdTransaction = await this.transactions.create(organizationId, applicationId, null, assetNetworkId, amount, participants);
+    const createdTransaction = await this.transactions.create(organizationId, applicationId, environmentId, null, assetNetworkId, amount, participants);
     const createdPaymentIntent = await this.deposits.createPaymentIntent(organizationId, createdTransaction.transactionId, assetNetworkId, amount, undefined);
     return this.getPayment(createdTransaction.transactionId, createdPaymentIntent.paymentIntentId);
   }

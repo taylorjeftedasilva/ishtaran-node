@@ -155,3 +155,17 @@ export function mapSubmitSignedTransactionResult(raw: unknown): SubmitSignedTran
     allLegsVerified: Boolean(field(raw, 'allLegsVerified')),
   };
 }
+
+/**
+ * DEC-037 -- a beneficiary's valid on-chain receiving address for a given AssetNetwork, consumed
+ * by SelfCustodySettlementExecutionStrategy when building an ExecutionLeg. Deliberately NOT
+ * `WithdrawalDestination` -- no whitelist/cooldown policy, first-registration-wins (a second
+ * registration for the same accountId+assetNetworkId is rejected, never silently overwritten).
+ */
+export interface RegisterExecutionDestinationResult {
+  executionDestinationId: string;
+}
+
+export function mapRegisterExecutionDestinationResult(raw: unknown): RegisterExecutionDestinationResult {
+  return { executionDestinationId: stringFieldOrNull(raw, 'executionDestinationId')! };
+}

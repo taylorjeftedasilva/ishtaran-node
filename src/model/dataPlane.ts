@@ -147,6 +147,8 @@ export interface TransactionResponse {
   transactionId: string;
   organizationId: string;
   applicationId: string;
+  /** DEC-037 -- explicit since creation, never inferred (an Application can have multiple Environments). */
+  environmentId: string;
   workflowVersionId: string | null;
   currentWorkflowStateId: string | null;
   assetNetworkId: string;
@@ -164,6 +166,7 @@ export function mapTransactionResponse(raw: unknown): TransactionResponse {
     transactionId: stringFieldOrNull(raw, 'transactionId')!,
     organizationId: stringFieldOrNull(raw, 'organizationId')!,
     applicationId: stringFieldOrNull(raw, 'applicationId')!,
+    environmentId: stringFieldOrNull(raw, 'environmentId')!,
     workflowVersionId: stringFieldOrNull(raw, 'workflowVersionId'),
     currentWorkflowStateId: stringFieldOrNull(raw, 'currentWorkflowStateId'),
     assetNetworkId: stringFieldOrNull(raw, 'assetNetworkId')!,

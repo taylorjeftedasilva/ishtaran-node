@@ -28,9 +28,12 @@ AccountHolders](README.md#what-this-sdk-does) for the identity model.
 ## Self-custody (`ExecutionCustody`)
 
 `client.wallets` / `client.signingRequests` — wallet registration, deposit address allocation,
-`SigningRequest` creation/submission. Covered with a full worked example in
-[README.md § Self-custody](README.md#self-custody) rather than duplicated here — the interesting
-part of this module is the local signing flow, not the HTTP resource shape.
+`SigningRequest` creation/submission. `client.executionDestinations` — registers the real on-chain
+address a beneficiary `Account` gets paid at for a given `AssetNetwork`; required before a
+`Settlement` can execute under SelfCustody (`DEC-037`) — `settlements.executeSettlement` fails
+fast, before any signing/broadcast, if a participant has none registered. Covered with a full
+worked example in [README.md § Self-custody](README.md#self-custody) rather than duplicated here —
+the interesting part of this module is the local signing flow, not the HTTP resource shape.
 
 ## Example — full flow without Easy Mode
 

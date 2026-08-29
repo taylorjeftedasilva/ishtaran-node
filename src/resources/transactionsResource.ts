@@ -25,9 +25,16 @@ export class TransactionsResource extends ResourceSupport {
     super(transport);
   }
 
+  /**
+   * DEC-037 -- `environmentId` is explicit and required (never inferred: an Application can have
+   * multiple Environments). When authenticated via Application API Key, the backend rejects a
+   * mismatch against the key's own bound Environment (cross-environment spoofing protection) --
+   * pass the same Environment the key belongs to.
+   */
   create(
     organizationId: string,
     applicationId: string,
+    environmentId: string,
     workflowVersionId: string | null,
     assetNetworkId: string,
     amount: string,
@@ -36,7 +43,7 @@ export class TransactionsResource extends ResourceSupport {
   ): Promise<CreateTransactionResult> {
     const key = resolveIdempotencyKey(idempotencyKey);
     const body = this.toJson({
-      applicationId, workflowVersionId, assetNetworkId, amount: Number(amount), participants, idempotencyKey: key,
+      applicationId, environmentId, workflowVersionId, assetNetworkId, amount: Number(amount), participants, idempotencyKey: key,
     });
     return this.execute(postRequest(`/v1/organizations/${organizationId}/transactions`, body, true), mapCreateTransactionResult);
   }

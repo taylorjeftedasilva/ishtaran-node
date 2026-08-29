@@ -5,7 +5,7 @@ import { TimeoutError } from './error/errors.js';
 
 function transactionJson(transactionId: string, status: number): string {
   return JSON.stringify({
-    transactionId, organizationId: 'org', applicationId: 'app', workflowVersionId: null,
+    transactionId, organizationId: 'org', applicationId: 'app', environmentId: 'env', workflowVersionId: null,
     currentWorkflowStateId: null, assetNetworkId: 'an', amount: 100, status,
     payerAccountId: 'payer', participants: [], createdAt: '2026-08-17T12:00:00Z',
     settledAmount: 0, refundedAmount: 0,
@@ -32,7 +32,7 @@ describe('IshtaranClient Easy Mode payments composition (no network)', () => {
 
     const client = IshtaranClient.forTesting(fake);
 
-    const result = await client.receivePayment('org', 'app', 'payer', 'recipient', 'an', '100');
+    const result = await client.receivePayment('org', 'app', 'env', 'payer', 'recipient', 'an', '100');
 
     expect(result.transactionId).toBe(transactionId);
     expect(result.paymentIntentId).toBe(paymentIntentId);

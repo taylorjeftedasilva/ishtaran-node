@@ -3,6 +3,45 @@
 Follows [SemVer](https://semver.org/). This is a **Development Preview** — 0.x versions may
 still change before a stable 1.0.0.
 
+## [Unreleased]
+
+- Added `client.executionDestinations.register(organizationId, accountId, assetNetworkId,
+  address)` (`POST /v1/organizations/{organizationId}/execution-destinations`) -- registers the
+  real on-chain address a beneficiary `Account` receives funds at, for a given `AssetNetwork`.
+  Required before a `Settlement` involving that Account can execute under SelfCustody (`DEC-037`):
+  `settlements.executeSettlement` now resolves every beneficiary's (and the Platform Fee's)
+  destination before building a `SigningRequest` and fails fast, before any signing/broadcast, if
+  none is registered. First-registration-wins -- a second call for the same `accountId`+
+  `assetNetworkId` is rejected, never silently overwritten. Also added
+  `SettlementResponse.signingRequestId` -- populated once a `Settlement` moves to SelfCustody
+  execution; fetch it with `client.signingRequests.get(signingRequestId)` to sign locally. Found
+  and fixed while closing out the real on-chain execution path for the Mercatto Business Case
+  (`examples/marketplace-mercatto/`) -- the backend's `ISettlementExecutionStrategy` split
+  (`SelfCustodySettlementExecutionStrategy` vs. legacy `ManagedCustodySettlementExecutionStrategy`)
+  was already implemented, but no SDK exposed the new `ExecutionDestination` resource or the
+  `signingRequestId` needed to actually complete a real Settlement end to end. No breaking change
+  -- both are additive.
+- **Breaking (positional args):** `settlementsResource.executeSettlement(transactionId, idempotencyKey?)`
+  is now `executeSettlement(transactionId, amount?, idempotencyKey?)` -- a new optional `amount`
+  parameter was inserted before `idempotencyKey`. Any caller passing `idempotencyKey` positionally
+  as the 2nd argument needs to move it to the 3rd. Enables Partial Settlement (`BL-STL-008`,
+  activated 2026-08-26): omit `amount` to settle the full remaining reserved balance (unchanged
+  default), or pass it to settle exactly that amount -- callable multiple times on the same
+  Transaction until the remaining balance reaches zero, each call computing its own Platform Fee
+  on its own gross slice. Found and fixed while building the Mercatto marketplace Business Case
+  (`examples/marketplace-mercatto/`): the platform's own domain/Application layer already
+  supported this per-call `Amount` since `DEC-019`, but the HTTP contract never exposed it
+  (`ExecuteSettlementRequest` had only `idempotencyKey`) -- a real, deliberate MVP deferral
+  (`BL-STL-008`, Pós-MVP) now activated by explicit product decision.
+- Fixed a real bug in the platform's Ledger module, also found via the Mercatto Business Case:
+  `BR-BAL-005` (Asset Network `MinAmount`/`MaxAmount`) was being enforced on every individual
+  Ledger Entry of every `RecordEntryCommand` -- including Settlement's internal Fee/Split postings
+  -- instead of only on the Gross Amount of a Reserve/Release operation, as `SPEC-005` always
+  documented. A Settlement with a Platform Fee below `MinAmount` (e.g. 0.90 on a 100 Gross with a
+  1.00 minimum, 0.9% fee) was rejected even though Settlement's own Gross-Amount-level range check
+  already passed. No SDK-visible API change -- documented here because it directly affects which
+  amounts a real `executeSettlement()` call can now succeed with.
+
 ## [0.1.2] — 2026-08-25
 
 - Fixed a real bug, found while building example 14: `authResource.signUp(...)` never sent the

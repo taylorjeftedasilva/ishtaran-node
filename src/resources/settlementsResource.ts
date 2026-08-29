@@ -16,8 +16,16 @@ export class SettlementsResource extends ResourceSupport {
     super(transport);
   }
 
-  executeSettlement(transactionId: string, idempotencyKey?: string): Promise<ExecuteSettlementResult> {
-    const body = this.toJson({ idempotencyKey: resolveIdempotencyKey(idempotencyKey) });
+  /**
+   * `amount` omitido/undefined -- liquida todo o remaining reservado (comportamento histórico,
+   * inalterado). `amount` informado -- liquida exatamente esse valor (BL-STL-008, ativado
+   * 2026-08-26 -- ver ExecuteSettlementRequest.cs), respeitando as mesmas invariantes do total
+   * (> 0, <= remaining, precisão do Asset, faixa do Asset Network). Pode ser chamado várias vezes
+   * sobre a mesma Transaction até `remainingReservedAmount` chegar a zero -- cada chamada calcula
+   * seu próprio Fee sobre o Gross daquela chamada, nunca sobre o total original.
+   */
+  executeSettlement(transactionId: string, amount?: string, idempotencyKey?: string): Promise<ExecuteSettlementResult> {
+    const body = this.toJson({ idempotencyKey: resolveIdempotencyKey(idempotencyKey), amount: amount !== undefined ? Number(amount) : null });
     return this.execute(postRequest(`/v1/transactions/${transactionId}/settlements`, body, true), mapExecuteSettlementResult);
   }
 

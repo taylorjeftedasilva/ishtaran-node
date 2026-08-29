@@ -41,13 +41,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          # npm Trusted Publishing/OIDC (id-token: write above) requires npm CLI >= 11.5.1, which
+          # itself requires Node >= 22.22 -- Node 20 LTS bundles npm 10.x, which has no idea how to
+          # exchange the OIDC token at all and silently falls back to an unauthenticated publish
+          # (real failure found live: every `npm publish` here 404'd on the registry, even after
+          # Trusted Publisher was configured on npmjs.com, because the CLI itself never attempted
+          # OIDC). `npm install -g npm@latest` alone isn't enough on Node 20 -- npm@latest (12.x)
+          # itself refuses to install (EBADENGINE), also found live -- Node needs to move too.
+          node-version: '22'
           registry-url: 'https://registry.npmjs.org'
-      # npm Trusted Publishing/OIDC (id-token: write above) requires npm CLI >= 11.5.1 -- Node 20
-      # LTS still bundles npm 10.x, which has no idea how to exchange the OIDC token at all and
-      # silently falls back to an unauthenticated publish (real failure found live: every
-      # `npm publish` here 404'd on the registry, even after Trusted Publisher was configured on
-      # npmjs.com, because the CLI itself never attempted OIDC).
       - run: npm install -g npm@latest
       - run: npm ci
       - run: npm run build

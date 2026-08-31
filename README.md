@@ -125,8 +125,8 @@ This is deliberately not a full reference — see [FEATURES.md](FEATURES.md) and
 npm install @ishtaran/sdk
 ```
 
-`0.1.0` is a real, published **Development Preview** release on npm -- verified live with a real
-`npm install` from a clean environment. See [CHANGELOG.md](CHANGELOG.md) for what's in it.
+`0.1.3` is a real, published **Development Preview** release on npm -- verified live with a real
+`npm install` from a clean environment (2026-08-31). See [CHANGELOG.md](CHANGELOG.md) for what's in it.
 
 Or for local development:
 
@@ -218,7 +218,7 @@ monetary field.
 
 ## Package distribution roadmap
 
-`0.1.0` (Development Preview) is published on npm — see [Installation](#installation). Future
+`0.1.3` (Development Preview) is published on npm — see [Installation](#installation). Future
 releases follow the same path: a reviewed, tested commit gets a new semver tag, and npm Trusted
 Publishing (OIDC, no long-lived token) publishes it automatically.
 

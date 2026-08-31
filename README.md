@@ -132,8 +132,8 @@ Or for local development:
 
 ```bash
 npm install && npm run build && npm pack
-# in your project:
-npm install /path/to/ishtaran-sdk-0.1.0.tgz
+# in your project (npm pack names the file after package.json's current version):
+npm install /path/to/ishtaran-sdk-<version>.tgz
 ```
 
 Requires **Node.js 18+**. ESM and CJS supported (dual build).

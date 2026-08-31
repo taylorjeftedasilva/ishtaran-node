@@ -1,6 +1,6 @@
 import { arrayField, field, stringField, stringFieldOrNull } from '../resources/resourceSupport.js';
 import { EnumValue } from './enumFactory.js';
-import { WithdrawalStatus, EntryNature, TransactionStatus } from './enums.js';
+import { WithdrawalStatus, EntryNature, TransactionStatus, NetworkExecutionCostStatus } from './enums.js';
 
 /**
  * DEC-032 -- an `Account` no longer belongs to a single Organization directly (global identity,
@@ -31,14 +31,23 @@ export function mapCreateAccountResult(raw: unknown): CreateAccountResult {
   return { accountId: stringFieldOrNull(raw, 'accountId')! };
 }
 
+/**
+ * SPEC-026 Descoberta 7/8 -- `estimatedNetworkFee` is `[Obsolete]` and always `null` under
+ * SelfCustody (the only reachable path today, DEC-041): the beneficiary always receives the full
+ * `requestedAmount`, never `amount - fee`. `networkExecutionCost` is the new source of truth for
+ * network cost (SPEC-NETEXEC-001). `preview quote != execution quote` -- `request()` always
+ * re-quotes from zero via `EnsureViableAsync`, never reuses this response as a price guarantee.
+ */
 export interface WithdrawalQuoteResponse {
   accountId: string;
   withdrawalDestinationId: string;
   assetNetworkId: string;
   /** Exact string -- never a `number`, never rounded (see SDK_CAPABILITY_SPEC.md §11.1). */
   requestedAmount: string;
-  estimatedNetworkFee: string;
+  /** @deprecated Vestigial under SelfCustody, always `null`. Use {@link networkExecutionCost}. */
+  estimatedNetworkFee: string | null;
   estimatedRecipientAmount: string;
+  networkExecutionCost: string;
   expiresAt: string;
 }
 
@@ -48,44 +57,66 @@ export function mapWithdrawalQuoteResponse(raw: unknown): WithdrawalQuoteRespons
     withdrawalDestinationId: stringFieldOrNull(raw, 'withdrawalDestinationId')!,
     assetNetworkId: stringFieldOrNull(raw, 'assetNetworkId')!,
     requestedAmount: stringFieldOrNull(raw, 'requestedAmount')!,
-    estimatedNetworkFee: stringFieldOrNull(raw, 'estimatedNetworkFee')!,
+    estimatedNetworkFee: stringFieldOrNull(raw, 'estimatedNetworkFee'),
     estimatedRecipientAmount: stringFieldOrNull(raw, 'estimatedRecipientAmount')!,
+    networkExecutionCost: stringFieldOrNull(raw, 'networkExecutionCost')!,
     expiresAt: stringFieldOrNull(raw, 'expiresAt')!,
   };
 }
 
+/**
+ * SPEC-026 Descoberta 8 -- same `estimatedNetworkFee`/`finalNetworkFee` deprecation as
+ * {@link WithdrawalQuoteResponse}. `signingRequestId` is populated only under SelfCustody, once
+ * there's something to sign (same role as `SettlementResponse.signingRequestId`).
+ * `networkExecutionCost`/`networkExecutionCostStatus` are the new source of truth for network
+ * cost, via `NetworkExecutionCostSettlementService` (SPEC-NETEXEC-002); both `null` before a
+ * network cost has been reserved yet.
+ */
 export interface WithdrawalResponse {
   withdrawalId: string;
   organizationId: string;
+  environmentId: string;
   accountId: string;
   withdrawalDestinationId: string;
   assetNetworkId: string;
   amount: string;
-  estimatedNetworkFee: string;
+  /** @deprecated Vestigial under SelfCustody, always `null`. Use {@link networkExecutionCost}. */
+  estimatedNetworkFee: string | null;
   estimatedRecipientAmount: string;
+  /** @deprecated Vestigial under SelfCustody, always `null`. Use {@link networkExecutionCost}. */
   finalNetworkFee: string | null;
   finalRecipientAmount: string | null;
   status: EnumValue<number>;
   entryGroupId: string | null;
   technicalReference: string | null;
+  signingRequestId: string | null;
+  networkExecutionCost: string | null;
+  networkExecutionCostStatus: EnumValue<number> | null;
   createdAt: string;
 }
 
 export function mapWithdrawalResponse(raw: unknown): WithdrawalResponse {
+  const networkExecutionCostStatusRaw = field(raw, 'networkExecutionCostStatus');
   return {
     withdrawalId: stringFieldOrNull(raw, 'withdrawalId')!,
     organizationId: stringFieldOrNull(raw, 'organizationId')!,
+    environmentId: stringFieldOrNull(raw, 'environmentId')!,
     accountId: stringFieldOrNull(raw, 'accountId')!,
     withdrawalDestinationId: stringFieldOrNull(raw, 'withdrawalDestinationId')!,
     assetNetworkId: stringFieldOrNull(raw, 'assetNetworkId')!,
     amount: stringFieldOrNull(raw, 'amount')!,
-    estimatedNetworkFee: stringFieldOrNull(raw, 'estimatedNetworkFee')!,
+    estimatedNetworkFee: stringFieldOrNull(raw, 'estimatedNetworkFee'),
     estimatedRecipientAmount: stringFieldOrNull(raw, 'estimatedRecipientAmount')!,
     finalNetworkFee: stringFieldOrNull(raw, 'finalNetworkFee'),
     finalRecipientAmount: stringFieldOrNull(raw, 'finalRecipientAmount'),
     status: WithdrawalStatus.fromRaw(Number(field(raw, 'status'))),
     entryGroupId: stringFieldOrNull(raw, 'entryGroupId'),
     technicalReference: stringFieldOrNull(raw, 'technicalReference'),
+    signingRequestId: stringFieldOrNull(raw, 'signingRequestId'),
+    networkExecutionCost: stringFieldOrNull(raw, 'networkExecutionCost'),
+    networkExecutionCostStatus: networkExecutionCostStatusRaw === null || networkExecutionCostStatusRaw === undefined
+      ? null
+      : NetworkExecutionCostStatus.fromRaw(Number(networkExecutionCostStatusRaw)),
     createdAt: stringFieldOrNull(raw, 'createdAt')!,
   };
 }

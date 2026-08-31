@@ -41,8 +41,10 @@ export interface SettlementResponse {
   pricingPolicyId: string;
   status: EnumValue<number>;
   entryGroupId: string | null;
-  /** DEC-037 -- populated only under SelfCustody, once SelfCustodySettlementExecutionStrategy creates a real SigningRequest (never under ManagedCustody, never before there's something to sign). Fetch it via `signingRequests.get(signingRequestId)` to sign locally. */
+  /** DEC-037 -- populated only under SelfCustody, once SelfCustodySettlementExecutionStrategy creates a real SigningRequest (never under ManagedCustody, never before there's something to sign). Fetch it via `signingRequests.get(signingRequestId)` to sign locally. Compatibility field -- always the first entry of {@link signingRequestIds} (or `null`); for a Settlement with more than one physical funding source, prefer `signingRequestIds`. */
   signingRequestId: string | null;
+  /** SPEC-ADDRESSPOOL-001 (multi-source funding) -- one SigningRequest per physical funding source frozen for this Settlement; usually a single entry, more than one only when the underlying Transaction was funded by more than one confirmed deposit address. */
+  signingRequestIds: string[];
   splitAllocations: SettlementSplitAllocationResponse[];
   createdAt: string;
   executedAt: string | null;
@@ -64,6 +66,7 @@ export function mapSettlementResponse(raw: unknown): SettlementResponse {
     status: SettlementStatus.fromRaw(Number(field(raw, 'status'))),
     entryGroupId: stringFieldOrNull(raw, 'entryGroupId'),
     signingRequestId: stringFieldOrNull(raw, 'signingRequestId'),
+    signingRequestIds: arrayField(raw, 'signingRequestIds', (item) => String(item)),
     splitAllocations: arrayField(raw, 'splitAllocations', mapSplitAllocation),
     createdAt: stringField(raw, 'createdAt'),
     executedAt: stringFieldOrNull(raw, 'executedAt'),

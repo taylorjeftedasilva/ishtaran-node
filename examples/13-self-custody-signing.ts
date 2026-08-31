@@ -46,10 +46,12 @@ if (locallyDerivedAddress !== allocated.address) {
   throw new Error(`Address mismatch: backend=${allocated.address} local=${locallyDerivedAddress}`);
 }
 
-// 5. Create the SigningRequest -- 2 legs (Seller + Ishtaran Platform Fee), amounts already
-//    computed by the caller (real Settlement/Withdrawals integration is future work). expiresAt
-//    is always explicit UTC (`Date.toISOString()` is always UTC in JS -- never depends on the
-//    process's local timezone).
+// 5. Create the SigningRequest directly -- the raw, standalone protocol, useful to learn it in
+//    isolation. A real Settlement/Withdrawal never does this by hand: executeSettlement()/
+//    withdrawals.request() build their own SigningRequest automatically, from the amounts
+//    already on the Settlement/Withdrawal -- see 14-marketplace-journey.ts for that real,
+//    end-to-end integration. expiresAt is always explicit UTC (`Date.toISOString()` is always
+//    UTC in JS -- never depends on the process's local timezone).
 const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 const created = await client.signingRequests.create(
   environmentId,

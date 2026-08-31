@@ -3,6 +3,63 @@
 Follows [SemVer](https://semver.org/). This is a **Development Preview** — 0.x versions may
 still change before a stable 1.0.0.
 
+## [0.1.3] — 2026-08-31
+
+- Added the Network Execution Engine and Payout surfaces (`SPEC-NETEXEC-001/002`, `SPEC-024/025`),
+  found and validated live against the real Sandbox while building the full marketplace journey
+  (`examples/14-marketplace-journey.ts`):
+  - `client.networkExecution.quote(...)` — a fresh, per-broadcast quote of the real network
+    resources (e.g. TRON Energy/Bandwidth) an execution will consume, always independent of the
+    Platform Fee.
+  - `client.executionSources.register(...)` — registers the wallet/address that actually pays for
+    a batched `PayoutBatch`'s own broadcast (distinct from `NetworkCostPayerAccount` below —
+    needed for `Withdrawal` execution and `PayoutBatch` creation, never for a Settlement's
+    Immediate path).
+  - `client.networkCostPayerAccounts.register(organizationId, assetNetworkId, accountId)` —
+    registers which of the Organization's own Accounts is debited for the real network execution
+    cost of every SelfCustody Settlement/Withdrawal/PayoutBatch on a given AssetNetwork.
+    **Required before the first real Settlement with anything to pay out** — without it,
+    `executeSettlement()` fails with 422 `PAYOUT_BATCH_NETWORK_COST_PAYER_ACCOUNT_NOT_REGISTERED`,
+    before it builds any `SigningRequest`.
+  - `client.payout.getPayableSummary(accountId, assetNetworkId)` — reads a beneficiary's
+    `accrued`/`reservedForPayout`/`paid` amounts. Under SelfCustody with an external-wallet
+    `ExecutionDestination`, a beneficiary's `Available` Ledger balance legitimately stays `0`
+    forever — `paid` (`Delivered`) is the real "have they been paid" signal.
+  - `client.payout.createBatch(...)`/`getBatch(...)` — this SDK slice only ever creates batches
+    with `trigger = Manual`; `ThresholdCrossed`/`Scheduled` exist in the domain model but have no
+    public route to trigger them yet.
+  - `SettlementResponse.signingRequestIds` (plural, `SPEC-ADDRESSPOOL-001`) — one entry per
+    physical funding source frozen for a Settlement; `signingRequestId` remains a compatibility
+    field, always the first entry.
+  - `WithdrawalResponse`/`WithdrawalQuoteResponse` gained `environmentId`, `signingRequestId`,
+    `networkExecutionCost`, `networkExecutionCostStatus`. `estimatedNetworkFee`/`finalNetworkFee`
+    are now deprecated and nullable — always `null` under SelfCustody; `networkExecutionCost` is
+    the real source of truth.
+  All additive, no breaking change from these alone.
+- **Breaking (real bug fix, not a redesign):** `withdrawalsResource.quote(...)`/`.request(...)`
+  and the Easy Mode `client.withdraw(...)` now take `environmentId` as an inserted positional
+  parameter (`(organizationId, environmentId, accountId, withdrawalDestinationId, assetNetworkId,
+  amount, idempotencyKey?)`). The backend has required `EnvironmentId`
+  (`RequestWithdrawalRequest.cs`/`WithdrawalQuoteRequest.cs`) since a prior session's SelfCustody
+  migration (commit `408ac5e`) — this SDK never sent it. Every real `withdrawals.request()` call
+  through this SDK would have failed with 400 `VALIDATION_ERROR` before this fix; confirmed live
+  against a real backend, not just inferred. Any caller must add the new argument.
+- Fixed real, pre-existing bugs in `examples/03-receive-payment-easy.ts` and
+  `examples/04-create-transaction-core.ts` (predate this release, confirmed via `git stash` +
+  typecheck comparison): both omitted the now-required `environmentId` on
+  `receivePayment()`/`transactions.create()`.
+- Rewrote `examples/14-marketplace-journey.ts`: `executeSettlement()` now builds its own
+  `SigningRequest` automatically (confirmed live) — the previous version manually called
+  `signingRequests.create()` with hand-picked addresses right after `executeSettlement()`, which
+  built a second, disconnected `SigningRequest`. The example now registers a
+  `NetworkCostPayerAccount` and per-beneficiary `ExecutionDestination`s, uses a real 2-beneficiary
+  explicit Split, and signs the real `settlement.signingRequestId`.
+- Fixed a stale comment in `examples/13-self-custody-signing.ts` claiming real Settlement/
+  Withdrawals integration was future work — it isn't, as of this release.
+- Note for cross-SDK parity: unlike this SDK, the Python/Java/Go SDKs' `transactions.create(...)`/
+  `receivePayment(...)` equivalents still have no `environmentId` parameter at all — a known,
+  tracked gap in those three SDKs, not in this one. See `SDK_CAPABILITY_SPEC.md` item 10.
+
 ## [0.1.2] — 2026-08-29
 
 - Added `client.executionDestinations.register(organizationId, accountId, assetNetworkId,

@@ -40,6 +40,28 @@ export const EnvironmentType = createEnum<number>({ SANDBOX: 1, PRODUCTION: 2 })
 export const DerivationScheme = createEnum<number>({ TRON_BIP44_HARDENED_ACCOUNT: 1 });
 /** Only used in REQUEST (InviteMemberRequest.role/AssignRoleRequest.newRole) -- the response is Group A (string). */
 export const MemberRoleRequest = createEnum<number>({ OWNER: 1, ADMIN: 2, FINANCE: 3, READ_ONLY: 4 });
+/** Withdrawals.Contracts.Enums.NetworkExecutionCostStatus (SPEC-026 Descoberta 8) -- derived from Withdrawal.Status, never its own persisted state. */
+export const NetworkExecutionCostStatus = createEnum<number>({ RESERVED: 0, SETTLED: 1, RELEASED: 2, REQUIRES_RECONCILIATION: 3 });
+/** ExecutionCustody.Contracts.Enums.NetworkCostPayer (SPEC-NETEXEC-001) -- who is charged for the quoted network cost. */
+export const NetworkCostPayer = createEnum<number>({ INTEGRATOR: 0, REQUESTER: 1 });
+/** ExecutionCustody.Contracts.Enums.NetworkResourceSource (SPEC-TRON-RESOURCE-001) -- where the physical network resource (e.g. TRON Energy/Bandwidth) came from. */
+export const NetworkResourceSource = createEnum<number>({
+  NOT_EVALUATED: 0, SELF: 1, ISHTARAN_SPONSORED: 2, PEER: 3, EXTERNAL: 4,
+});
+/** ExecutionCustody.Contracts.Enums.NetworkOperationKind (SPEC-NETEXEC-001) -- the kind of physical on-chain operation a NetworkExecutionQuote is priced for. */
+export const NetworkOperationKind = createEnum<number>({
+  TRANSFER: 0, SWAP: 1, STAKE: 2, UNSTAKE: 3, DELEGATE: 4, UNDELEGATE: 5,
+});
+/** Payout.Contracts.Enums.PayoutBatchTrigger (SPEC-025) -- this SDK slice only ever sends MANUAL (CreatePayoutBatchCommand accepts no other trigger via the public route yet). */
+export const PayoutBatchTrigger = createEnum<number>({ THRESHOLD_CROSSED: 0, SCHEDULED: 1, MANUAL: 2 });
+/** Payout.Contracts.Enums.PayoutBatchStatus (SPEC-025). */
+export const PayoutBatchStatus = createEnum<number>({
+  CREATED: 0, RESERVED: 1, EXECUTING: 2, COMPLETED: 3, PARTIALLY_FAILED: 4, FAILED: 5,
+});
+/** Payout.Contracts.Enums.PayoutBatchObligationStatus (SPEC-025). */
+export const PayoutBatchObligationStatus = createEnum<number>({
+  INCLUDED: 0, CONFIRMED: 1, FAILED: 2, REQUIRES_RECONCILIATION: 3,
+});
 
 // ---- Group A (string) ----
 export const AccountStatus = createEnum<string>({ ACTIVE: 'Active', FROZEN: 'Frozen', CLOSED: 'Closed' });

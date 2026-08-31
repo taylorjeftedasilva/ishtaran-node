@@ -1,6 +1,6 @@
 import { arrayField, field, stringField, stringFieldOrNull } from '../resources/resourceSupport.js';
 import { EnumValue } from './enumFactory.js';
-import { DerivationScheme } from './enums.js';
+import { DerivationScheme, NetworkCostPayer, NetworkResourceSource } from './enums.js';
 
 export interface RegisterWalletResult {
   walletId: string;
@@ -168,4 +168,149 @@ export interface RegisterExecutionDestinationResult {
 
 export function mapRegisterExecutionDestinationResult(raw: unknown): RegisterExecutionDestinationResult {
   return { executionDestinationId: stringFieldOrNull(raw, 'executionDestinationId')! };
+}
+
+/**
+ * SPEC-ADDRESSPOOL-001/CUSTODY-EXECUTION-MODES.md -- the outbound-only counterpart of a Wallet
+ * derivation: the address ExecutionCustody signs FROM to pay network cost (Energy/Bandwidth/gas),
+ * never confused with an ExecutionDestination (a beneficiary's inbound address). Must be
+ * registered before the first self-custody Withdrawal/Payout on a given AssetNetwork -- see
+ * `docs/specs/execution-custody/README.md` "Bootstrap obrigatório" for the required order
+ * (Wallet -> ExecutionSource -> NetworkCostPayerAccount).
+ */
+export interface RegisterExecutionSourceResult {
+  executionSourceId: string;
+}
+
+export function mapRegisterExecutionSourceResult(raw: unknown): RegisterExecutionSourceResult {
+  return { executionSourceId: stringFieldOrNull(raw, 'executionSourceId')! };
+}
+
+/**
+ * SPEC-NETEXEC-001 -- the Account debited for the *charged* network cost (`totalCharged`, in
+ * `quoteCurrency`) once a NetworkExecutionQuote is authorized. First-registration-wins per
+ * (organizationId, assetNetworkId), same as ExecutionDestination -- never silently overwritten.
+ * Must belong to the same Organization as the caller (a cross-tenant AccountId is rejected).
+ */
+export interface RegisterNetworkCostPayerAccountResult {
+  networkCostPayerAccountId: string;
+}
+
+export function mapRegisterNetworkCostPayerAccountResult(raw: unknown): RegisterNetworkCostPayerAccountResult {
+  return { networkCostPayerAccountId: stringFieldOrNull(raw, 'networkCostPayerAccountId')! };
+}
+
+/** A single physical operation to be priced -- input to {@link NetworkExecutionResource.quote}, never interpreted by the caller. */
+export interface NetworkExecutionOperationInput {
+  destinationAddress: string | null;
+  /** Exact decimal string -- never a `number`, never rounded (see SDK_CAPABILITY_SPEC.md §11.1). */
+  amount: string;
+  kind: EnumValue<number>;
+  reference: string | null;
+}
+
+/** SPEC-NETEXEC-001 Descoberta 2 -- the physical unit (what will be one real on-chain transaction), grouping 1..N transfers. */
+export interface NetworkExecutionTransferResponse {
+  destinationAddress: string;
+  amount: string;
+  sourceOperationReference: string | null;
+}
+
+function mapNetworkExecutionTransferResponse(raw: unknown): NetworkExecutionTransferResponse {
+  return {
+    destinationAddress: stringField(raw, 'destinationAddress'),
+    amount: stringFieldOrNull(raw, 'amount')!,
+    sourceOperationReference: stringFieldOrNull(raw, 'sourceOperationReference'),
+  };
+}
+
+export interface NetworkExecutionTransactionResponse {
+  transfers: NetworkExecutionTransferResponse[];
+}
+
+function mapNetworkExecutionTransactionResponse(raw: unknown): NetworkExecutionTransactionResponse {
+  return { transfers: arrayField(raw, 'transfers', mapNetworkExecutionTransferResponse) };
+}
+
+/** SPEC-NETEXEC-001 BL-NET-002 -- structured result of `INetworkExecutionPlanner.Plan(...)`, never flattened into loose fields. */
+export interface NetworkExecutionPlanResponse {
+  assetNetworkId: string;
+  transactions: NetworkExecutionTransactionResponse[];
+}
+
+function mapNetworkExecutionPlanResponse(raw: unknown): NetworkExecutionPlanResponse {
+  return {
+    assetNetworkId: stringFieldOrNull(raw, 'assetNetworkId')!,
+    transactions: arrayField(raw, 'transactions', mapNetworkExecutionTransactionResponse),
+  };
+}
+
+/** SPEC-NETEXEC-001 Descoberta 6/BR-NET-008 -- `resourceCode` is opaque (string), never interpreted by the generic caller. */
+export interface NetworkResourceLineResponse {
+  resourceCode: string;
+  quantity: string;
+  unit: string | null;
+}
+
+function mapNetworkResourceLineResponse(raw: unknown): NetworkResourceLineResponse {
+  return {
+    resourceCode: stringField(raw, 'resourceCode'),
+    quantity: stringFieldOrNull(raw, 'quantity')!,
+    unit: stringFieldOrNull(raw, 'unit'),
+  };
+}
+
+export interface NetworkResourceEstimateResponse {
+  lines: NetworkResourceLineResponse[];
+}
+
+function mapNetworkResourceEstimateResponse(raw: unknown): NetworkResourceEstimateResponse {
+  return { lines: arrayField(raw, 'lines', mapNetworkResourceLineResponse) };
+}
+
+/**
+ * SPEC-NETEXEC-001 (brief §13) -- mirror of `ExecutionCustody.Domain.ValueObjects.NetworkExecutionQuote`.
+ * `nativeExecutionCost`/`authorizedNativeCost` are always in the RESOURCE asset's native units
+ * (`resourceAssetNetworkId ?? assetNetworkId`); `totalCharged` is always in `quoteCurrency` (the
+ * CHARGED asset) -- `totalCharged = (nativeExecutionCost * fx) + safetyBuffer +
+ * replenishmentRequirement + conversionOverhead`. `authorizedNativeCost` is the number actually
+ * reserved for execution (>= the sum of every physical operation's cost, INC-18) -- never compare
+ * a caller-supplied estimate directly against `nativeExecutionCost` alone.
+ */
+export interface NetworkExecutionQuoteResponse {
+  network: string | null;
+  plan: NetworkExecutionPlanResponse;
+  estimatedResources: NetworkResourceEstimateResponse;
+  nativeExecutionCost: string;
+  resourceAssetNetworkId: string | null;
+  quoteCurrency: string | null;
+  fx: string;
+  safetyBuffer: string;
+  resourceSource: EnumValue<number>;
+  replenishmentRequirement: string | null;
+  conversionOverhead: string;
+  expiresAt: string;
+  totalCharged: string;
+  networkCostPayer: EnumValue<number>;
+  authorizedNativeCost: string;
+}
+
+export function mapNetworkExecutionQuoteResponse(raw: unknown): NetworkExecutionQuoteResponse {
+  return {
+    network: stringFieldOrNull(raw, 'network'),
+    plan: mapNetworkExecutionPlanResponse(field(raw, 'plan')),
+    estimatedResources: mapNetworkResourceEstimateResponse(field(raw, 'estimatedResources')),
+    nativeExecutionCost: stringFieldOrNull(raw, 'nativeExecutionCost')!,
+    resourceAssetNetworkId: stringFieldOrNull(raw, 'resourceAssetNetworkId'),
+    quoteCurrency: stringFieldOrNull(raw, 'quoteCurrency'),
+    fx: stringFieldOrNull(raw, 'fx')!,
+    safetyBuffer: stringFieldOrNull(raw, 'safetyBuffer')!,
+    resourceSource: NetworkResourceSource.fromRaw(Number(field(raw, 'resourceSource'))),
+    replenishmentRequirement: stringFieldOrNull(raw, 'replenishmentRequirement'),
+    conversionOverhead: stringFieldOrNull(raw, 'conversionOverhead')!,
+    expiresAt: stringField(raw, 'expiresAt'),
+    totalCharged: stringFieldOrNull(raw, 'totalCharged')!,
+    networkCostPayer: NetworkCostPayer.fromRaw(Number(field(raw, 'networkCostPayer'))),
+    authorizedNativeCost: stringFieldOrNull(raw, 'authorizedNativeCost')!,
+  };
 }

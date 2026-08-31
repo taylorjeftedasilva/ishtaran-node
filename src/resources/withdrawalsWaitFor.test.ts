@@ -5,10 +5,11 @@ import { TimeoutError } from '../error/errors.js';
 
 function withdrawalJson(id: string, status: number): string {
   return JSON.stringify({
-    withdrawalId: id, organizationId: 'org', accountId: 'acc', withdrawalDestinationId: 'dest',
-    assetNetworkId: 'an', amount: 100, estimatedNetworkFee: 0.4, estimatedRecipientAmount: 99.6,
+    withdrawalId: id, organizationId: 'org', environmentId: 'env', accountId: 'acc', withdrawalDestinationId: 'dest',
+    assetNetworkId: 'an', amount: 100, estimatedNetworkFee: null, estimatedRecipientAmount: 100,
     finalNetworkFee: null, finalRecipientAmount: null, status, entryGroupId: null,
-    technicalReference: null, createdAt: '2026-08-17T12:00:00Z',
+    technicalReference: null, signingRequestId: null, networkExecutionCost: null,
+    networkExecutionCostStatus: null, createdAt: '2026-08-17T12:00:00Z',
   });
 }
 

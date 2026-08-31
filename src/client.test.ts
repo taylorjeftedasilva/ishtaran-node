@@ -7,10 +7,11 @@ describe('IshtaranClient Easy Mode composition (no network, via forTesting)', ()
     const destinationId = 'd-1111';
     const createDestBody = JSON.stringify({ withdrawalDestinationId: destinationId });
     const requestBody = JSON.stringify({
-      withdrawalId: 'w-1', organizationId: 'org', accountId: 'acc', withdrawalDestinationId: destinationId,
-      assetNetworkId: 'an', amount: 50, estimatedNetworkFee: 0.4, estimatedRecipientAmount: 49.6,
+      withdrawalId: 'w-1', organizationId: 'org', environmentId: 'env', accountId: 'acc', withdrawalDestinationId: destinationId,
+      assetNetworkId: 'an', amount: 50, estimatedNetworkFee: null, estimatedRecipientAmount: 50,
       finalNetworkFee: null, finalRecipientAmount: null, status: 0, entryGroupId: null,
-      technicalReference: null, createdAt: '2026-08-17T12:00:00Z',
+      technicalReference: null, signingRequestId: 'sr-1', networkExecutionCost: 0.4,
+      networkExecutionCostStatus: 0, createdAt: '2026-08-17T12:00:00Z',
     });
 
     const fake = new FakeHttpTransport()
@@ -19,25 +20,28 @@ describe('IshtaranClient Easy Mode composition (no network, via forTesting)', ()
 
     const client = IshtaranClient.forTesting(fake);
 
-    const result = await client.withdraw('org', 'acc', 'an', '50', 'TDestReal', undefined);
+    const result = await client.withdraw('org', 'env', 'acc', 'an', '50', 'TDestReal', undefined);
 
     expect(result.withdrawalId).toBe('w-1');
-    expect(result.estimatedNetworkFee).toBe('0.4');
-    expect(result.estimatedRecipientAmount).toBe('49.6');
+    expect(result.estimatedNetworkFee).toBeNull();
+    expect(result.estimatedRecipientAmount).toBe('50');
+    expect(result.networkExecutionCost).toBe('0.4');
     expect(fake.requestCount).toBe(2);
+    expect(JSON.parse(fake.received[1]!.body as string).environmentId).toBe('env');
   });
 
   it('withdraw skips createDestination when an existing destination id is given', async () => {
     const requestBody = JSON.stringify({
-      withdrawalId: 'w-2', organizationId: 'org', accountId: 'acc', withdrawalDestinationId: 'existing-dest',
-      assetNetworkId: 'an', amount: 10, estimatedNetworkFee: 0.1, estimatedRecipientAmount: 9.9,
+      withdrawalId: 'w-2', organizationId: 'org', environmentId: 'env', accountId: 'acc', withdrawalDestinationId: 'existing-dest',
+      assetNetworkId: 'an', amount: 10, estimatedNetworkFee: null, estimatedRecipientAmount: 10,
       finalNetworkFee: null, finalRecipientAmount: null, status: 0, entryGroupId: null,
-      technicalReference: null, createdAt: '2026-08-17T12:00:00Z',
+      technicalReference: null, signingRequestId: null, networkExecutionCost: 0.1,
+      networkExecutionCostStatus: 0, createdAt: '2026-08-17T12:00:00Z',
     });
     const fake = new FakeHttpTransport().enqueue(FakeHttpTransport.json(201, requestBody));
     const client = IshtaranClient.forTesting(fake);
 
-    await client.withdraw('org', 'acc', 'an', '10', 'unused-address', 'existing-dest');
+    await client.withdraw('org', 'env', 'acc', 'an', '10', 'unused-address', 'existing-dest');
 
     expect(fake.requestCount).toBe(1);
   });

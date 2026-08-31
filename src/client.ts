@@ -29,6 +29,10 @@ import { WebhookDeliveriesResource } from './resources/webhookDeliveriesResource
 import { WalletsResource } from './resources/walletsResource.js';
 import { SigningRequestsResource } from './resources/signingRequestsResource.js';
 import { ExecutionDestinationsResource } from './resources/executionDestinationsResource.js';
+import { ExecutionSourcesResource } from './resources/executionSourcesResource.js';
+import { NetworkCostPayerAccountsResource } from './resources/networkCostPayerAccountsResource.js';
+import { NetworkExecutionResource } from './resources/networkExecutionResource.js';
+import { PayoutResource } from './resources/payoutResource.js';
 import { BalanceResponse, ParticipantInput, WithdrawalResponse } from './model/dataPlane.js';
 import { PaymentIntentStatus, TransactionStatus } from './model/enums.js';
 import { verifyWebhookSignature } from './webhook/webhookSignatureVerifier.js';
@@ -38,8 +42,10 @@ import { pollUntil } from './util/polling.js';
 export interface EasyWithdrawResult {
   withdrawalId: string;
   requestedAmount: string;
-  estimatedNetworkFee: string;
+  /** @deprecated Vestigial under SelfCustody, always `null`. Use {@link networkExecutionCost}. */
+  estimatedNetworkFee: string | null;
   estimatedRecipientAmount: string;
+  networkExecutionCost: string | null;
   status: WithdrawalResponse['status'];
 }
 
@@ -86,6 +92,10 @@ export class IshtaranClient {
   readonly signingRequests: SigningRequestsResource;
   /** DEC-037 -- registers a beneficiary's real receiving address, required before SelfCustody Settlement can execute. */
   readonly executionDestinations: ExecutionDestinationsResource;
+  readonly executionSources: ExecutionSourcesResource;
+  readonly networkCostPayerAccounts: NetworkCostPayerAccountsResource;
+  readonly networkExecution: NetworkExecutionResource;
+  readonly payout: PayoutResource;
 
   private constructor(rawTransport: HttpTransport, apiKey: string | undefined, retryPolicy: RetryPolicy) {
     const bearerTokenHolder = new BearerTokenHolder();
@@ -124,6 +134,10 @@ export class IshtaranClient {
     this.wallets = new WalletsResource(transport);
     this.signingRequests = new SigningRequestsResource(transport);
     this.executionDestinations = new ExecutionDestinationsResource(transport);
+    this.executionSources = new ExecutionSourcesResource(transport);
+    this.networkCostPayerAccounts = new NetworkCostPayerAccountsResource(transport);
+    this.networkExecution = new NetworkExecutionResource(transport);
+    this.payout = new PayoutResource(transport);
   }
 
   static create(input: IshtaranClientConfigInput): IshtaranClient {
@@ -156,6 +170,7 @@ export class IshtaranClient {
    */
   async withdraw(
     organizationId: string,
+    environmentId: string,
     accountId: string,
     assetNetworkId: string,
     amount: string,
@@ -167,12 +182,13 @@ export class IshtaranClient {
       const destination = await this.withdrawals.createDestination(organizationId, destinationAddress, assetNetworkId);
       destinationId = destination.withdrawalDestinationId;
     }
-    const result = await this.withdrawals.request(organizationId, accountId, destinationId, assetNetworkId, amount);
+    const result = await this.withdrawals.request(organizationId, environmentId, accountId, destinationId, assetNetworkId, amount);
     return {
       withdrawalId: result.withdrawalId,
       requestedAmount: result.amount,
       estimatedNetworkFee: result.estimatedNetworkFee,
       estimatedRecipientAmount: result.estimatedRecipientAmount,
+      networkExecutionCost: result.networkExecutionCost,
       status: result.status,
     };
   }

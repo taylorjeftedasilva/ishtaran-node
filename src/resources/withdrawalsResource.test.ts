@@ -11,36 +11,47 @@ describe('WithdrawalsResource', () => {
 
     const body = JSON.stringify({
       accountId, withdrawalDestinationId: destId, assetNetworkId,
-      requestedAmount: 100, estimatedNetworkFee: 0.4, estimatedRecipientAmount: 99.6,
-      expiresAt: '2026-08-17T12:00:00Z',
+      requestedAmount: 100, estimatedNetworkFee: null, estimatedRecipientAmount: 100,
+      networkExecutionCost: 0.84364, expiresAt: '2026-08-17T12:00:00Z',
     });
     const fake = new FakeHttpTransport().enqueue(FakeHttpTransport.json(200, body));
     const resource = new WithdrawalsResource(fake);
 
-    const quote = await resource.quote('org-1', accountId, destId, assetNetworkId, '100');
+    const quote = await resource.quote('org-1', 'env-1', accountId, destId, assetNetworkId, '100');
 
-    expect(quote.estimatedNetworkFee).toBe('0.4');
-    expect(quote.estimatedRecipientAmount).toBe('99.6');
+    expect(quote.estimatedNetworkFee).toBeNull();
+    expect(quote.estimatedRecipientAmount).toBe('100');
+    expect(quote.networkExecutionCost).toBe('0.84364');
     expect(fake.requestCount).toBe(1);
     expect(fake.received[0]?.method).toBe('POST');
     expect(fake.received[0]?.path.endsWith('/withdrawals/quote')).toBe(true);
+    // Regression: GetWithdrawalQuoteQuery/RequestWithdrawalCommand require EnvironmentId
+    // server-side (RequestWithdrawalRequest.cs) -- omitting it from the body defaults to
+    // Guid.Empty and fails FluentValidation with a 400 VALIDATION_ERROR, confirmed live 2026-08-31.
+    expect(JSON.parse(fake.received[0]!.body as string).environmentId).toBe('env-1');
   });
 
   it('request auto-generates idempotency key when not provided', async () => {
     const body = JSON.stringify({
-      withdrawalId: 'w1', organizationId: 'org-1', accountId: 'a1',
+      withdrawalId: 'w1', organizationId: 'org-1', environmentId: 'env-1', accountId: 'a1',
       withdrawalDestinationId: 'd1', assetNetworkId: 'an1',
-      amount: 100, estimatedNetworkFee: 0.4, estimatedRecipientAmount: 99.6,
+      amount: 100, estimatedNetworkFee: null, estimatedRecipientAmount: 100,
       finalNetworkFee: null, finalRecipientAmount: null,
-      status: 0, entryGroupId: null, technicalReference: null, createdAt: '2026-08-17T12:00:00Z',
+      status: 0, entryGroupId: null, technicalReference: null,
+      signingRequestId: 'sr-1', networkExecutionCost: 0.84364, networkExecutionCostStatus: 0,
+      createdAt: '2026-08-17T12:00:00Z',
     });
     const fake = new FakeHttpTransport().enqueue(FakeHttpTransport.json(201, body));
     const resource = new WithdrawalsResource(fake);
 
-    const result = await resource.request('org-1', 'a1', 'd1', 'an1', '100');
+    const result = await resource.request('org-1', 'env-1', 'a1', 'd1', 'an1', '100');
 
     expect(result.status.name).toBe('REQUESTED');
+    expect(result.signingRequestId).toBe('sr-1');
+    expect(result.networkExecutionCost).toBe('0.84364');
+    expect(result.networkExecutionCostStatus?.name).toBe('RESERVED');
     expect(fake.received[0]?.body).toContain('idempotencyKey');
+    expect(JSON.parse(fake.received[0]!.body as string).environmentId).toBe('env-1');
   });
 
   it('get not found maps to NotFoundError', async () => {

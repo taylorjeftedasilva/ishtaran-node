@@ -36,6 +36,19 @@ export abstract class ResourceSupport {
     return raw.map(mapper);
   }
 
+  /** Like {@link execute}, but a 204/empty body (a legitimate no-op, e.g. "no eligible candidates") maps to `null` instead of throwing. */
+  protected async executeOptional<T>(request: IshtaranHttpRequest, mapper: (raw: unknown) => T): Promise<T | null> {
+    const response = await this.transport.send(request);
+    if (response.status >= 400) {
+      throw mapError(response);
+    }
+    if (response.status === 204 || !response.body || response.body.trim() === '') {
+      return null;
+    }
+    const raw = parseLossless(response.body);
+    return mapper(raw);
+  }
+
   protected async executeNoContent(request: IshtaranHttpRequest): Promise<void> {
     const response = await this.transport.send(request);
     if (response.status >= 400) {

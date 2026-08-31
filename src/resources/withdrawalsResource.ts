@@ -33,12 +33,13 @@ export class WithdrawalsResource extends ResourceSupport {
 
   quote(
     organizationId: string,
+    environmentId: string,
     accountId: string,
     withdrawalDestinationId: string,
     assetNetworkId: string,
     amount: string,
   ): Promise<WithdrawalQuoteResponse> {
-    const body = this.toJson({ accountId, withdrawalDestinationId, assetNetworkId, amount: Number(amount) });
+    const body = this.toJson({ environmentId, accountId, withdrawalDestinationId, assetNetworkId, amount: Number(amount) });
     return this.execute(
       postRequest(`/v1/organizations/${organizationId}/withdrawals/quote`, body, true),
       mapWithdrawalQuoteResponse,
@@ -55,6 +56,7 @@ export class WithdrawalsResource extends ResourceSupport {
 
   request(
     organizationId: string,
+    environmentId: string,
     accountId: string,
     withdrawalDestinationId: string,
     assetNetworkId: string,
@@ -62,7 +64,7 @@ export class WithdrawalsResource extends ResourceSupport {
     idempotencyKey?: string,
   ): Promise<WithdrawalResponse> {
     const key = resolveIdempotencyKey(idempotencyKey);
-    const body = this.toJson({ accountId, withdrawalDestinationId, assetNetworkId, amount: Number(amount), idempotencyKey: key });
+    const body = this.toJson({ environmentId, accountId, withdrawalDestinationId, assetNetworkId, amount: Number(amount), idempotencyKey: key });
     return this.execute(postRequest(`/v1/organizations/${organizationId}/withdrawals`, body, true), mapWithdrawalResponse);
   }
 

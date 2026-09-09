@@ -65,6 +65,66 @@ Two registrations gate which mode an Organization actually runs in for a given `
   `ISHTARAN_RESOURCES` instead of failing closed. Requires a `NetworkCostPayerAccount` already
   registered via `register` first.
 
+## Withdrawal
+
+- `client.withdrawals.quote(organizationId, environmentId, accountId, withdrawalDestinationId,
+  assetNetworkId, amount)` — a pure read, never writes anything; the response always exposes
+  `estimatedNetworkFee`/`estimatedRecipientAmount`, never hiding the network cost.
+- `client.withdrawals.request(...)` — the same arguments plus an idempotency key; builds the real
+  Withdrawal and, under SelfCustody, its `SigningRequest` (singular field only — Withdrawal never
+  supports multi-source funding the way Settlement does, see
+  [CORE_API.md § Self-custody](#self-custody-executioncustody)).
+- **Destination cooldown**: a newly-registered `WithdrawalDestination` can't be withdrawn to for
+  **24 hours by default** (`WithdrawalPolicy.CooldownHours`, platform-enforced floor of 1 hour —
+  an Organization can raise it, never lower it below the floor). Adding a *new* destination when
+  an active one already exists for the same AssetNetwork (an account-takeover pattern) uses a
+  separate, longer cooldown — **7 days by default** (`DestinationChangeCooldownHours`). Neither
+  cooldown has a bypass — never build a flow that assumes one.
+- **Reconciliation**: a Withdrawal whose broadcast can't be automatically resolved moves to a
+  terminal status the backend calls `RequiresReconciliation` (raw value `11`) rather than silently
+  failing or retrying forever — surface it to a human, it needs manual platform-side resolution.
+  **Known SDK gap, verified against the real backend enum**: this SDK's `WithdrawalStatus` only
+  defines raw values `0`-`9` — status `11` (and `Failed`, `10`) come back as the forward-compatible
+  unknown-value fallback rather than a named constant. Check the raw integer (`11`) if you need to
+  detect this specific status today; treating any unrecognized/unknown status defensively (not
+  just this one) is good practice regardless.
+- `client.withdrawals.list`/`.listAll` — one of only 2 endpoints with real pagination (see
+  § Real pagination below).
+
+## Payout (`SPEC-024`/`SPEC-025`)
+
+Payout is where Settlement's economic outcome (who owes what) turns into an actual delivery.
+**Settlement != Payout**: `settlements.executeSettlement` records the economic truth (obligations,
+splits, the Platform Fee) — it never itself moves a beneficiary's money on-chain. Whether that
+delivery happens immediately or later depends on the Organization's `PayoutPolicy`:
+
+- **`IMMEDIATE`** — a beneficiary's Payable is delivered the same moment as the Settlement itself;
+  no `PayoutBatch` involved.
+- **`MANUAL`** — the beneficiary only accrues an economic obligation until someone explicitly
+  creates a `PayoutBatch` for them via `client.payout.createBatch(...)`.
+
+These are the two `PayoutPolicy` modes with real public support today. The backend domain model
+also defines `THRESHOLD` and `SCHEDULED` values, but neither has a public trigger yet (both are
+rejected — no scheduler/threshold-crossing worker exists in this slice) — don't build against
+them as available capabilities.
+
+- `client.payout.getPayableSummary(accountId, assetNetworkId)` — returns `{ accrued,
+  reservedForPayout, paid }` for that Account/AssetNetwork pair. **`accrued` is an economic
+  obligation the platform owes that Account, never the same thing as the Account's own on-chain
+  `available` balance** (from `accounts.getBalance`) — an Account can have a large `accrued`
+  Payable and `0` available balance simultaneously (nothing paid out yet), or vice versa.
+  `reservedForPayout` is currently always `0` (no batch-scoped reservation exists yet).
+- `client.payout.createBatch(organizationId, environmentId, assetNetworkId, explicitOwnerIds,
+  idempotencyKey?)` — creates a `PayoutBatch` covering the given beneficiaries' currently-accrued
+  obligations. This SDK slice only ever sends `trigger = MANUAL` (the only trigger the public
+  route accepts). Returns `{ payoutBatchId: null }` (204, a legitimate no-op) when none of the
+  given owners had an eligible obligation.
+- `client.payout.getBatch(organizationId, payoutBatchId)` — full batch state: `status`,
+  per-beneficiary `obligations` (each with its own `sourceObligations`/`destinationAddress`/
+  `status`), the frozen `networkExecutionQuoteSnapshot` if network execution was involved, and a
+  single `signingRequestId` (a PayoutBatch's own SelfCustody signing is not multi-source the way
+  Settlement's is — see [CORE_API.md § Self-custody](#self-custody-executioncustody)).
+
 ## Example — full flow without Easy Mode
 
 ```typescript

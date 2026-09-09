@@ -38,6 +38,11 @@ export function postRequest(path: string, body: string | undefined, idempotent: 
   return { method: 'POST', path, headers: {}, body, idempotent };
 }
 
+/** PATCH is always idempotent by construction here -- every caller sends the full desired state, never a delta. */
+export function patchRequest(path: string, body: string | undefined): IshtaranHttpRequest {
+  return { method: 'PATCH', path, headers: {}, body, idempotent: true };
+}
+
 export function deleteRequest(path: string): IshtaranHttpRequest {
   return { method: 'DELETE', path, headers: {}, idempotent: false };
 }

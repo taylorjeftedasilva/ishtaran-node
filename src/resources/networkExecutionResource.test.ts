@@ -29,6 +29,7 @@ describe('NetworkExecutionResource', () => {
       totalCharged: 3.16456,
       networkCostPayer: 0,
       authorizedNativeCost: 6.3,
+      margin: 0.15,
     });
     const fake = new FakeHttpTransport().enqueue(FakeHttpTransport.json(200, body));
     const resource = new NetworkExecutionResource(fake);
@@ -48,6 +49,7 @@ describe('NetworkExecutionResource', () => {
     expect(quote.plan.transactions).toHaveLength(2);
     expect(quote.totalCharged).toBe('3.16456');
     expect(quote.authorizedNativeCost).toBe('6.3');
+    expect(quote.margin).toBe('0.15');
     expect(quote.resourceSource.name).toBe('SELF');
     expect(quote.networkCostPayer.name).toBe('INTEGRATOR');
     expect(quote.estimatedResources.lines.map((l) => l.resourceCode)).toEqual(['ENERGY', 'BANDWIDTH']);
@@ -59,7 +61,7 @@ describe('NetworkExecutionResource', () => {
       estimatedResources: { lines: [] }, nativeExecutionCost: 0, resourceAssetNetworkId: null,
       quoteCurrency: null, fx: 1, safetyBuffer: 0, resourceSource: 0, replenishmentRequirement: null,
       conversionOverhead: 0, expiresAt: '2026-08-31T12:00:00Z', totalCharged: 0, networkCostPayer: 1,
-      authorizedNativeCost: 0,
+      authorizedNativeCost: 0, margin: 0,
     });
     const fake = new FakeHttpTransport().enqueue(FakeHttpTransport.json(200, body));
     const resource = new NetworkExecutionResource(fake);

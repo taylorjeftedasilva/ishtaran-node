@@ -275,7 +275,8 @@ function mapNetworkResourceEstimateResponse(raw: unknown): NetworkResourceEstima
  * CHARGED asset) -- `totalCharged = (nativeExecutionCost * fx) + safetyBuffer +
  * replenishmentRequirement + conversionOverhead`. `authorizedNativeCost` is the number actually
  * reserved for execution (>= the sum of every physical operation's cost, INC-18) -- never compare
- * a caller-supplied estimate directly against `nativeExecutionCost` alone.
+ * a caller-supplied estimate directly against `nativeExecutionCost` alone. `margin` is the
+ * Ishtaran markup applied in ISHTARAN_RESOURCES mode (always `0` in CUSTOMER_RESOURCES mode).
  */
 export interface NetworkExecutionQuoteResponse {
   network: string | null;
@@ -293,6 +294,7 @@ export interface NetworkExecutionQuoteResponse {
   totalCharged: string;
   networkCostPayer: EnumValue<number>;
   authorizedNativeCost: string;
+  margin: string;
 }
 
 export function mapNetworkExecutionQuoteResponse(raw: unknown): NetworkExecutionQuoteResponse {
@@ -312,5 +314,6 @@ export function mapNetworkExecutionQuoteResponse(raw: unknown): NetworkExecution
     totalCharged: stringFieldOrNull(raw, 'totalCharged')!,
     networkCostPayer: NetworkCostPayer.fromRaw(Number(field(raw, 'networkCostPayer'))),
     authorizedNativeCost: stringFieldOrNull(raw, 'authorizedNativeCost')!,
+    margin: stringFieldOrNull(raw, 'margin')!,
   };
 }

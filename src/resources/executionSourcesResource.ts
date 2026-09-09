@@ -27,4 +27,28 @@ export class ExecutionSourcesResource extends ResourceSupport {
       mapRegisterExecutionSourceResult,
     );
   }
+
+  /**
+   * F.18 -- self-reported (no on-chain verification in this version) declaration of the on-chain
+   * resource capacity available to the Wallet backing this ExecutionSource. Required before
+   * CUSTOMER_RESOURCES (`SELF`) mode can ever succeed for it -- the platform checks this declared
+   * stake for sufficiency at quote time. Safe to call again any time to re-sync (no
+   * first-registration-wins restriction, unlike {@link register}).
+   */
+  syncResourceStake(
+    organizationId: string,
+    executionSourceId: string,
+    availableNativeAmount: string,
+    availableEnergy: string,
+    availableBandwidth: string,
+  ): Promise<void> {
+    const body = this.toJson({
+      availableNativeAmount: Number(availableNativeAmount),
+      availableEnergy: Number(availableEnergy),
+      availableBandwidth: Number(availableBandwidth),
+    });
+    return this.executeNoContent(
+      postRequest(`/v1/organizations/${organizationId}/execution-sources/${executionSourceId}/resource-stake`, body, false),
+    );
+  }
 }

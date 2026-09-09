@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { NetworkCostPayerAccountsResource } from './networkCostPayerAccountsResource.js';
 import { FakeHttpTransport } from '../http/fakeHttpTransport.js';
 import { ConflictError } from '../error/errors.js';
+import { NetworkResourceSource } from '../model/enums.js';
 
 describe('NetworkCostPayerAccountsResource', () => {
   it('register posts assetNetworkId + accountId, maps the created id', async () => {
@@ -21,5 +22,17 @@ describe('NetworkCostPayerAccountsResource', () => {
     const resource = new NetworkCostPayerAccountsResource(fake);
 
     await expect(resource.register('org-1', 'an-1', 'someone-elses-account')).rejects.toBeInstanceOf(ConflictError);
+  });
+
+  it('updateResourcePreference PATCHes the resource preference + fallback flag', async () => {
+    const fake = new FakeHttpTransport().enqueue(FakeHttpTransport.json(204, ''));
+    const resource = new NetworkCostPayerAccountsResource(fake);
+
+    await resource.updateResourcePreference('org-1', 'an-1', NetworkResourceSource.SELF!, true);
+
+    expect(fake.received[0]?.method).toBe('PATCH');
+    expect(fake.received[0]?.path).toBe('/v1/organizations/org-1/network-cost-payer-accounts/an-1/resource-preference');
+    const sentBody = JSON.parse(fake.received[0]?.body as string);
+    expect(sentBody).toEqual({ resourcePreference: 1, allowFallbackToIshtaranResources: true });
   });
 });

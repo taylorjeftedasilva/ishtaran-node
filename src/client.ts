@@ -33,6 +33,7 @@ import { ExecutionSourcesResource } from './resources/executionSourcesResource.j
 import { NetworkCostPayerAccountsResource } from './resources/networkCostPayerAccountsResource.js';
 import { NetworkExecutionResource } from './resources/networkExecutionResource.js';
 import { PayoutResource } from './resources/payoutResource.js';
+import { WalletBalanceResource } from './resources/walletBalanceResource.js';
 import { BalanceResponse, ParticipantInput, WithdrawalResponse } from './model/dataPlane.js';
 import { PaymentIntentStatus, TransactionStatus } from './model/enums.js';
 import { verifyWebhookSignature } from './webhook/webhookSignatureVerifier.js';
@@ -96,6 +97,8 @@ export class IshtaranClient {
   readonly networkCostPayerAccounts: NetworkCostPayerAccountsResource;
   readonly networkExecution: NetworkExecutionResource;
   readonly payout: PayoutResource;
+  /** PROMPT 1 -- the wallet's own on-chain balance, never the Ledger (`ledger.getBalance`). See WalletBalanceResource's own doc for why this isn't part of `wallets` (ExecutionCustody's unrelated execution/signing wallets). */
+  readonly walletBalance: WalletBalanceResource;
 
   private constructor(rawTransport: HttpTransport, apiKey: string | undefined, retryPolicy: RetryPolicy) {
     const bearerTokenHolder = new BearerTokenHolder();
@@ -138,6 +141,7 @@ export class IshtaranClient {
     this.networkCostPayerAccounts = new NetworkCostPayerAccountsResource(transport);
     this.networkExecution = new NetworkExecutionResource(transport);
     this.payout = new PayoutResource(transport);
+    this.walletBalance = new WalletBalanceResource(transport);
   }
 
   static create(input: IshtaranClientConfigInput): IshtaranClient {

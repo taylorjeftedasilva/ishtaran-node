@@ -57,6 +57,42 @@ export function mapSandboxTreasuryObservedBalanceResponse(raw: unknown): Sandbox
   };
 }
 
+export interface SandboxWalletBalanceResponse {
+  environmentId: string;
+  assetNetworkId: string;
+  address: string;
+  balance: string;
+  updatedAt: string;
+}
+
+export function mapSandboxWalletBalanceResponse(raw: unknown): SandboxWalletBalanceResponse {
+  return {
+    environmentId: stringFieldOrNull(raw, 'environmentId')!,
+    assetNetworkId: stringFieldOrNull(raw, 'assetNetworkId')!,
+    address: stringFieldOrNull(raw, 'address')!,
+    balance: stringFieldOrNull(raw, 'balance')!,
+    updatedAt: stringField(raw, 'updatedAt'),
+  };
+}
+
+export interface SandboxWalletTransferResponse {
+  fromAddress: string;
+  fromBalanceAfter: string;
+  toAddress: string;
+  toBalanceAfter: string;
+  occurredAt: string;
+}
+
+export function mapSandboxWalletTransferResponse(raw: unknown): SandboxWalletTransferResponse {
+  return {
+    fromAddress: stringFieldOrNull(raw, 'fromAddress')!,
+    fromBalanceAfter: stringFieldOrNull(raw, 'fromBalanceAfter')!,
+    toAddress: stringFieldOrNull(raw, 'toAddress')!,
+    toBalanceAfter: stringFieldOrNull(raw, 'toBalanceAfter')!,
+    occurredAt: stringField(raw, 'occurredAt'),
+  };
+}
+
 export interface SandboxObservedAddressResult { sandboxObservedAddressId: string }
 export function mapSandboxObservedAddressResult(raw: unknown): SandboxObservedAddressResult {
   return { sandboxObservedAddressId: stringFieldOrNull(raw, 'sandboxObservedAddressId')! };

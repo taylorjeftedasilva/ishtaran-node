@@ -31,6 +31,7 @@ export * from './model/sandbox.js';
 export * from './model/webhookEndpoints.js';
 export * from './model/executionCustody.js';
 export * from './model/payout.js';
+export * from './model/walletBalance.js';
 
 export * as wallet from './wallet/walletFactory.js';
 export type { Wallet, GeneratedWallet } from './wallet/walletFactory.js';

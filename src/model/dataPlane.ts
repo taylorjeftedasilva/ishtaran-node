@@ -129,10 +129,23 @@ export function mapCreateWithdrawalDestinationResult(raw: unknown): CreateWithdr
   return { withdrawalDestinationId: stringFieldOrNull(raw, 'withdrawalDestinationId')! };
 }
 
+/**
+ * G.2 (found 2026-09-11): the real backend record (Ledger.Contracts.Responses.BalanceResponse)
+ * has carried `Payable`/`ReservedForPayout`/`Delivered` since SPEC-024/025 (2026-08-30) -- this
+ * SDK silently dropped all three, parsing only the original 3 fields. Payable is what Payout owes
+ * a beneficiary but hasn't paid yet (an economic obligation, never an on-chain balance);
+ * ReservedForPayout is Payable already claimed by an in-flight PayoutBatch; Delivered is the
+ * cumulative real payout total -- under SelfCustody this can grow while `available` stays exactly
+ * 0, because the money already left the platform's custody entirely (see `client.walletBalance`
+ * for the wallet's own on-chain state, a different question again).
+ */
 export interface BalanceResponse {
   available: string;
   pending: string;
   reserved: string;
+  payable: string;
+  reservedForPayout: string;
+  delivered: string;
 }
 
 export function mapBalanceResponse(raw: unknown): BalanceResponse {
@@ -140,6 +153,9 @@ export function mapBalanceResponse(raw: unknown): BalanceResponse {
     available: stringFieldOrNull(raw, 'available')!,
     pending: stringFieldOrNull(raw, 'pending')!,
     reserved: stringFieldOrNull(raw, 'reserved')!,
+    payable: stringFieldOrNull(raw, 'payable') ?? '0',
+    reservedForPayout: stringFieldOrNull(raw, 'reservedForPayout') ?? '0',
+    delivered: stringFieldOrNull(raw, 'delivered') ?? '0',
   };
 }
 

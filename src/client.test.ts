@@ -55,6 +55,28 @@ describe('IshtaranClient Easy Mode composition (no network, via forTesting)', ()
     expect(balance.available).toBe('100');
   });
 
+  it('getBalance parses payable/reservedForPayout/delivered (G.2) -- never silently dropped', async () => {
+    const body = JSON.stringify({ available: 0, pending: 0, reserved: 0, payable: 178.38, reservedForPayout: 19.82, delivered: 178.38 });
+    const fake = new FakeHttpTransport().enqueue(FakeHttpTransport.json(200, body));
+    const client = IshtaranClient.forTesting(fake);
+
+    const balance = await client.getBalance('acc', 'an');
+    expect(balance.payable).toBe('178.38');
+    expect(balance.reservedForPayout).toBe('19.82');
+    expect(balance.delivered).toBe('178.38');
+  });
+
+  it('getBalance defaults payable/reservedForPayout/delivered to "0" when a wire response omits them (backward-compat, never throws)', async () => {
+    const body = JSON.stringify({ available: 100, pending: 0, reserved: 0 });
+    const fake = new FakeHttpTransport().enqueue(FakeHttpTransport.json(200, body));
+    const client = IshtaranClient.forTesting(fake);
+
+    const balance = await client.getBalance('acc', 'an');
+    expect(balance.payable).toBe('0');
+    expect(balance.reservedForPayout).toBe('0');
+    expect(balance.delivered).toBe('0');
+  });
+
   it('verifyWebhookSignature makes no HTTP call', async () => {
     const fake = new FakeHttpTransport(); // no response queued -- would throw if called
     const client = IshtaranClient.forTesting(fake);

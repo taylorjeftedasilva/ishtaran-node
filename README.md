@@ -140,7 +140,9 @@ npm install @ishtaran/sdk
 ```
 
 `0.1.4` is a real, published **Development Preview** release on npm -- verified live with a real
-`npm install` from a clean environment (2026-09-11). See [CHANGELOG.md](CHANGELOG.md) for what's in it.
+`npm install` from a clean environment (2026-09-11). `0.1.5` fixes a real gap (G.2, `BalanceResponse`
+parity — see [CHANGELOG.md](CHANGELOG.md)) and is the minimum version if your code reads
+`payable`/`reservedForPayout`/`delivered` from `client.getBalance`/`client.ledger.getBalance`.
 
 Or for local development:
 
@@ -232,7 +234,7 @@ monetary field.
 
 ## Package distribution roadmap
 
-`0.1.4` (Development Preview) is published on npm — see [Installation](#installation). Future
+`0.1.5` (Development Preview) is published on npm — see [Installation](#installation). Future
 releases follow the same path: a reviewed, tested commit gets a new semver tag, and npm Trusted
 Publishing (OIDC, no long-lived token) publishes it automatically.
 

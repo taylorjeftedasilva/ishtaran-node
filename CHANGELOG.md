@@ -5,6 +5,14 @@ still change before a stable 1.0.0.
 
 ## [Unreleased]
 
+## [0.1.5] — 2026-09-11
+
+- **G.2 fixed** — `BalanceResponse` (from `client.ledger.getBalance`/`client.getBalance`) was
+  silently dropping `payable`, `reservedForPayout`, and `delivered` — present on the real backend
+  record (`Ledger.Contracts.Responses.BalanceResponse`) since `SPEC-024/025` (2026-08-30), never
+  parsed by this SDK. All three now present on the returned type. Backward compatible: an older
+  wire response that omits them still parses, defaulting each to `"0"`, never throwing.
+
 ## [0.1.4] — 2026-09-11
 
 - **Wallet Balance / On-Chain Balance capability** (`client.walletBalance`) — the wallet's own

@@ -5,6 +5,18 @@ still change before a stable 1.0.0.
 
 ## [Unreleased]
 
+## [0.1.6] — 2026-09-11
+
+- **`client.transactions.searchExecutions`/`searchExecutionsAll`** (new) — discoverability for
+  outstanding/overdue Executions (`GET /v1/organizations/{organizationId}/executions`), closing an
+  operational gap: the safety rule that restricts an Organization's settlement ability on an
+  overdue Execution was correct, but there was previously no way to find which Execution caused
+  it. Scoped by `organizationId`, same authorization model as every other
+  `/v1/organizations/{organizationId}/...` route — never cross-tenant. New `ExecutionStatus` enum
+  (`PREPARED`/`AWAITING_SIGNATURE`/`EXECUTED`/`FAILED`/`EXPIRED`/`OVERDUE`) and `ExecutionResponse`
+  type. The only real remediation for an `AWAITING_SIGNATURE`/`OVERDUE` Execution is the
+  settlement flow — this platform is non-custodial and has no cancel path for an Execution.
+
 ## [0.1.5] — 2026-09-11
 
 - **G.2 fixed** — `BalanceResponse` (from `client.ledger.getBalance`/`client.getBalance`) was

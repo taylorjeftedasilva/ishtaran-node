@@ -1,6 +1,6 @@
 import { arrayField, field, stringField, stringFieldOrNull } from '../resources/resourceSupport.js';
 import { EnumValue } from './enumFactory.js';
-import { WithdrawalStatus, EntryNature, TransactionStatus, NetworkExecutionCostStatus } from './enums.js';
+import { WithdrawalStatus, EntryNature, TransactionStatus, NetworkExecutionCostStatus, ExecutionStatus } from './enums.js';
 
 /**
  * DEC-032 -- an `Account` no longer belongs to a single Organization directly (global identity,
@@ -233,6 +233,37 @@ export interface CreateTransactionResult {
 
 export function mapCreateTransactionResult(raw: unknown): CreateTransactionResult {
   return { transactionId: stringFieldOrNull(raw, 'transactionId')! };
+}
+
+/**
+ * PROMPT 5 §9 (G.7) -- `GET /v1/organizations/{organizationId}/executions`, discoverability for
+ * `AwaitingSignature`/`Overdue` Executions (the safety rule that makes an Organization
+ * settlement-restricted stays -- this only closes the operational hole of finding which Execution
+ * caused it). The only real remediation for an `AwaitingSignature`/`Overdue` Execution is
+ * `transactions.executeSettlement(executionId)` (non-custodial model -- there is no cancel path).
+ */
+export interface ExecutionResponse {
+  executionId: string;
+  transactionId: string;
+  organizationId: string;
+  status: EnumValue<number>;
+  preparedAt: string;
+  gracePeriodExpiresAt: string;
+  executedAt: string | null;
+  settlementId: string | null;
+}
+
+export function mapExecutionResponse(raw: unknown): ExecutionResponse {
+  return {
+    executionId: stringFieldOrNull(raw, 'executionId')!,
+    transactionId: stringFieldOrNull(raw, 'transactionId')!,
+    organizationId: stringFieldOrNull(raw, 'organizationId')!,
+    status: ExecutionStatus.fromRaw(Number(field(raw, 'status'))),
+    preparedAt: stringFieldOrNull(raw, 'preparedAt')!,
+    gracePeriodExpiresAt: stringFieldOrNull(raw, 'gracePeriodExpiresAt')!,
+    executedAt: stringFieldOrNull(raw, 'executedAt'),
+    settlementId: stringFieldOrNull(raw, 'settlementId'),
+  };
 }
 
 export interface TransactionStatusResponse {

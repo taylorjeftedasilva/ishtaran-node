@@ -139,10 +139,13 @@ This is deliberately not a full reference — see [FEATURES.md](FEATURES.md) and
 npm install @ishtaran/sdk
 ```
 
-`0.1.4` is a real, published **Development Preview** release on npm -- verified live with a real
-`npm install` from a clean environment (2026-09-11). `0.1.5` fixes a real gap (G.2, `BalanceResponse`
-parity — see [CHANGELOG.md](CHANGELOG.md)) and is the minimum version if your code reads
+`0.1.7` is the current real, published **Development Preview** release on npm -- verified live with
+a real `npm install` from a clean environment (2026-09-12). `0.1.5` fixed a real gap (G.2,
+`BalanceResponse` parity) and is the minimum version if your code reads
 `payable`/`reservedForPayout`/`delivered` from `client.getBalance`/`client.ledger.getBalance`.
+`0.1.7` fixes a second real gap: `payout.getBatch()`'s `networkExecutionQuoteSnapshot` is now
+correctly typed/mapped as nullable (a batch that ended `Failed` before reaching `Executing` never
+had a quote) -- see [CHANGELOG.md](CHANGELOG.md) for the full, version-by-version history.
 
 Or for local development:
 
@@ -234,7 +237,7 @@ monetary field.
 
 ## Package distribution roadmap
 
-`0.1.5` (Development Preview) is published on npm — see [Installation](#installation). Future
+`0.1.7` (Development Preview) is published on npm — see [Installation](#installation). Future
 releases follow the same path: a reviewed, tested commit gets a new semver tag, and npm Trusted
 Publishing (OIDC, no long-lived token) publishes it automatically.
 

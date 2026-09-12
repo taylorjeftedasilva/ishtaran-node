@@ -5,6 +5,18 @@ still change before a stable 1.0.0.
 
 ## [Unreleased]
 
+## [0.1.7] — 2026-09-11
+
+- **Fixed** — `client.payout.getBatch()` (`PayoutBatchResponse.networkExecutionQuoteSnapshot`)
+  crashed (`Expected an object to read field "network"`) whenever a `PayoutBatch` had no captured
+  quote snapshot yet — most commonly a batch that ended `Status=FAILED` before ever reserving. The
+  real backend contract (`Payout.Contracts.Queries.PayoutBatchResponse`) always declared this field
+  nullable; this SDK previously declared it non-nullable and mapped it unconditionally. Now
+  correctly typed `NetworkExecutionQuoteSnapshotResponse | null`, `null` exactly when the backend
+  sends `null` — never a fabricated default quote. **Source-breaking for TypeScript consumers**
+  that read `.networkExecutionQuoteSnapshot.<field>` without a null check — add one (a batch you
+  just successfully reserved/executed always has a real snapshot; a `Failed` batch never does).
+
 ## [0.1.6] — 2026-09-11
 
 - **`client.transactions.searchExecutions`/`searchExecutionsAll`** (new) — discoverability for

@@ -90,12 +90,22 @@ export interface PayoutBatchResponse {
   trigger: EnumValue<number>;
   status: EnumValue<number>;
   obligations: PayoutBatchObligationResponse[];
-  networkExecutionQuoteSnapshot: NetworkExecutionQuoteSnapshotResponse;
+  /**
+   * Real backend contract (Payout.Contracts.Queries.PayoutBatchResponse) always had this as
+   * `NetworkExecutionQuoteSnapshotResponse?` -- genuinely null whenever a batch never reached (or
+   * didn't survive past) the point where the quote gets captured, most commonly a batch that ended
+   * up `Status=Failed` before ever reserving (G.6's own compensating-rollback path). Found live
+   * 2026-09-11: this field was previously declared non-nullable and unconditionally mapped, which
+   * crashed (`Expected an object to read field "network"`) on exactly that real, legitimate state
+   * -- SDK stale relative to the backend, not a backend regression.
+   */
+  networkExecutionQuoteSnapshot: NetworkExecutionQuoteSnapshotResponse | null;
   signingRequestId: string | null;
   createdAt: string;
 }
 
 export function mapPayoutBatchResponse(raw: unknown): PayoutBatchResponse {
+  const rawSnapshot = field(raw, 'networkExecutionQuoteSnapshot');
   return {
     payoutBatchId: stringFieldOrNull(raw, 'payoutBatchId')!,
     organizationId: stringFieldOrNull(raw, 'organizationId')!,
@@ -104,7 +114,7 @@ export function mapPayoutBatchResponse(raw: unknown): PayoutBatchResponse {
     trigger: PayoutBatchTrigger.fromRaw(Number(field(raw, 'trigger'))),
     status: PayoutBatchStatus.fromRaw(Number(field(raw, 'status'))),
     obligations: arrayField(raw, 'obligations', mapPayoutBatchObligationResponse),
-    networkExecutionQuoteSnapshot: mapNetworkExecutionQuoteSnapshotResponse(field(raw, 'networkExecutionQuoteSnapshot')),
+    networkExecutionQuoteSnapshot: rawSnapshot === null || rawSnapshot === undefined ? null : mapNetworkExecutionQuoteSnapshotResponse(rawSnapshot),
     signingRequestId: stringFieldOrNull(raw, 'signingRequestId'),
     createdAt: stringField(raw, 'createdAt'),
   };

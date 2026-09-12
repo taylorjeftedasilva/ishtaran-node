@@ -60,6 +60,29 @@ describe('PayoutResource', () => {
     expect(batch.status.name).toBe('COMPLETED');
     expect(batch.obligations[0]?.status.name).toBe('CONFIRMED');
     expect(batch.obligations[0]?.sourceObligations[0]?.amount).toBe('100');
-    expect(batch.networkExecutionQuoteSnapshot.totalCharged).toBe('3.16456');
+    expect(batch.networkExecutionQuoteSnapshot?.totalCharged).toBe('3.16456');
+  });
+
+  /**
+   * Regression (found live 2026-09-11, PROMPT 5.1 §2): the real backend contract always had
+   * networkExecutionQuoteSnapshot as nullable (a batch that ends up Status=Failed before ever
+   * reserving never captures one) -- this SDK used to declare it non-nullable and map it
+   * unconditionally, crashing on exactly this real response shape.
+   */
+  it('getBatch maps a null quote snapshot (e.g. a batch that ended Failed before reserving), never crashing', async () => {
+    const body = JSON.stringify({
+      payoutBatchId: 'pb-2', organizationId: 'org-1', environmentId: 'env-1', assetNetworkId: 'an-1',
+      trigger: 2, status: 5, // Failed
+      obligations: [],
+      networkExecutionQuoteSnapshot: null,
+      signingRequestId: null, createdAt: '2026-08-31T11:00:00Z',
+    });
+    const fake = new FakeHttpTransport().enqueue(FakeHttpTransport.json(200, body));
+    const resource = new PayoutResource(fake);
+
+    const batch = await resource.getBatch('org-1', 'pb-2');
+
+    expect(batch.status.name).toBe('FAILED');
+    expect(batch.networkExecutionQuoteSnapshot).toBeNull();
   });
 });

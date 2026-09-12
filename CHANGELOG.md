@@ -5,6 +5,10 @@ still change before a stable 1.0.0.
 
 ## [Unreleased]
 
+- **Fixed** — `DEFAULT_USER_AGENT` (`ishtaran-node/<version>`, sent on every request) was frozen
+  at `0.1.3` since that release — every subsequent version (`0.1.4` through `0.1.7`) sent a stale
+  version string, found during a public-knowledge audit. `SDK_VERSION` now correctly reads `0.1.7`.
+
 ## [0.1.7] — 2026-09-11
 
 - **Fixed** — `client.payout.getBatch()` (`PayoutBatchResponse.networkExecutionQuoteSnapshot`)

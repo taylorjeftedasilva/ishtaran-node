@@ -24,6 +24,12 @@ export const WithdrawalStatus = createEnum<number>({
 export const ExecutionStatus = createEnum<number>({
   PREPARED: 0, AWAITING_SIGNATURE: 1, EXECUTED: 2, FAILED: 3, EXPIRED: 4, OVERDUE: 5,
 });
+/** PROMPT 7 (SPEC-TRANSFER-001) -- mirrors Transfers.Contracts.Enums.TransferStatus. */
+export const TransferStatus = createEnum<number>({
+  CREATED: 0, AWAITING_SIGNATURE: 1, SUBMITTED: 2, CONFIRMED: 3, FAILED: 4,
+});
+/** PROMPT 7 (SPEC-TRANSFER-001) -- mirrors Settlement.Contracts.Enums.OperationType. */
+export const OperationType = createEnum<number>({ MARKETPLACE: 0, PAYMENT: 1, TRANSFER: 2 });
 export const SettlementStatus = createEnum<number>({ PENDING: 0, EXECUTING: 1, COMPLETED: 2, FAILED: 3 });
 export const RefundStatus = createEnum<number>({ REQUESTED: 0, APPROVED: 1, EXECUTED: 2, REJECTED: 3 });
 export const SplitAllocationStatus = createEnum<number>({ EXECUTED: 0, RETAINED: 1, RELEASED: 2 });

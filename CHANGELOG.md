@@ -5,9 +5,42 @@ still change before a stable 1.0.0.
 
 ## [Unreleased]
 
+## [0.1.9] — 2026-09-12
+
+- **Added** — `TransferResponse.signingRequestId` — the real `SigningRequest` (PROMPT 7.1,
+  BR-TRF-008) a Transfer creates for the sending Account's own self-custody wallet. Use it with
+  `signingRequests.get(...)` to fetch the Legs/`canonicalHash` to sign locally, then
+  `signingRequests.submitSignedTransaction(...)` per Leg — a Transfer now ends its `request()` call
+  in `AWAITING_SIGNATURE`, never synchronously `CONFIRMED`.
+- **Added** — `wallets.registerForAccount(organizationId, accountId, applicationId, networkId,
+  scheme, publicDerivationMaterial, idempotencyKey?)` — registers the execution/signing identity
+  OWNED by a specific Account (its own xpub, generated independently client-side — never the same
+  material as the Application's shared `wallets.register`). Required once before that Account can
+  ever be the `sourceAccountId` of a `transfers.request(...)` call for a given `networkId`.
+- **Fixed** — `transfers.request(...)` mapped the creation endpoint's own real ack shape
+  (`{ transferId }` only, same convention as every other `POST .../transfers`-shaped route in this
+  platform) as if it were the full `TransferResponse`, silently returning a mostly-null object
+  instead of ever throwing or succeeding meaningfully — found live while building a real
+  client-side signing integration. `request(...)` now does the create, then immediately follows up
+  with `get(...)` internally, returning a genuinely populated result in one call.
+
+## [0.1.8] — 2026-09-12
+
+- **Added** — `client.transfers` (`RequestTransferCommand`/`GetTransferQuery`) -- first-class
+  wallet-to-wallet Transfer, never a Payment/PaymentIntent/Settlement in disguise (PROMPT 7,
+  SPEC-TRANSFER-001). `transfers.request(...)` sends to either an internal Account
+  (`{ accountId }`) or an arbitrary external address (`{ address }`, never pre-registration
+  required); the Platform Fee is always `ON_TOP` — the recipient always receives exactly the
+  requested `amount`, the fee is charged separately from the sender and reported on the response
+  (`platformFeeAmount`/`platformFeePercentage`).
+- **Added** — `OperationType` enum (`MARKETPLACE`/`PAYMENT`/`TRANSFER`) and a new optional 4th
+  parameter on `client.settlements.executeSettlement(transactionId, amount?, idempotencyKey?,
+  operationType?)` — selects which Platform Fee rate applies (default `MARKETPLACE`, 100%
+  backward compatible; pass `OperationType.PAYMENT` for a simple 2-party payment to get the
+  Payment rate instead of the Marketplace rate).
 - **Fixed** — `DEFAULT_USER_AGENT` (`ishtaran-node/<version>`, sent on every request) was frozen
   at `0.1.3` since that release — every subsequent version (`0.1.4` through `0.1.7`) sent a stale
-  version string, found during a public-knowledge audit. `SDK_VERSION` now correctly reads `0.1.7`.
+  version string, found during a public-knowledge audit. `SDK_VERSION` now correctly reads `0.1.8`.
 
 ## [0.1.7] — 2026-09-11
 

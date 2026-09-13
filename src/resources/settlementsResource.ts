@@ -1,6 +1,7 @@
 import { ResourceSupport } from './resourceSupport.js';
 import { HttpTransport, getRequest, postRequest } from '../http/types.js';
 import { resolveIdempotencyKey } from '../idempotency/idempotencyKeyGenerator.js';
+import { EnumValue } from '../model/enumFactory.js';
 import {
   ExecuteSettlementResult,
   SettlementResponse,
@@ -24,8 +25,18 @@ export class SettlementsResource extends ResourceSupport {
    * sobre a mesma Transaction até `remainingReservedAmount` chegar a zero -- cada chamada calcula
    * seu próprio Fee sobre o Gross daquela chamada, nunca sobre o total original.
    */
-  executeSettlement(transactionId: string, amount?: string, idempotencyKey?: string): Promise<ExecuteSettlementResult> {
-    const body = this.toJson({ idempotencyKey: resolveIdempotencyKey(idempotencyKey), amount: amount !== undefined ? Number(amount) : null });
+  /**
+   * PROMPT 7 (SPEC-TRANSFER-001) -- `operationType` selects which PricingPolicy rate applies
+   * (default `OperationType.MARKETPLACE`, 100% backward compatible -- never inferred from the
+   * Transaction's own shape). Pass `OperationType.PAYMENT` for a simple 2-party payment (0.40%),
+   * leave it unset for a marketplace/split settlement (0.90%).
+   */
+  executeSettlement(transactionId: string, amount?: string, idempotencyKey?: string, operationType?: EnumValue<number>): Promise<ExecuteSettlementResult> {
+    const body = this.toJson({
+      idempotencyKey: resolveIdempotencyKey(idempotencyKey),
+      amount: amount !== undefined ? Number(amount) : null,
+      operationType: operationType ? operationType.rawValue : undefined,
+    });
     return this.execute(postRequest(`/v1/transactions/${transactionId}/settlements`, body, true), mapExecuteSettlementResult);
   }
 

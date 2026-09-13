@@ -1,6 +1,6 @@
 import { arrayField, field, stringField, stringFieldOrNull } from '../resources/resourceSupport.js';
 import { EnumValue } from './enumFactory.js';
-import { WithdrawalStatus, EntryNature, TransactionStatus, NetworkExecutionCostStatus, ExecutionStatus } from './enums.js';
+import { WithdrawalStatus, EntryNature, TransactionStatus, NetworkExecutionCostStatus, ExecutionStatus, TransferStatus } from './enums.js';
 
 /**
  * DEC-032 -- an `Account` no longer belongs to a single Organization directly (global identity,
@@ -277,5 +277,51 @@ export function mapTransactionStatusResponse(raw: unknown): TransactionStatusRes
     status: TransactionStatus.fromRaw(Number(field(raw, 'status'))),
     workflowVersionId: stringFieldOrNull(raw, 'workflowVersionId'),
     currentWorkflowStateId: stringFieldOrNull(raw, 'currentWorkflowStateId'),
+  };
+}
+
+/**
+ * PROMPT 7 (SPEC-TRANSFER-001) -- first-class Transfer, never a Payment/Settlement in disguise.
+ * `amount` is always exactly what the recipient receives (BR-TRF-004, ON_TOP fee mode) --
+ * `platformFeeAmount` is charged separately, on top, from the sender.
+ */
+export interface TransferResponse {
+  transferId: string;
+  organizationId: string;
+  applicationId: string;
+  environmentId: string;
+  sourceAccountId: string;
+  assetNetworkId: string;
+  amount: string;
+  destinationAddress: string;
+  destinationAccountId: string | null;
+  platformFeeAmount: string;
+  platformFeePercentage: string;
+  status: EnumValue<number>;
+  /** BR-TRF-008 -- the real SigningRequest (ExecutionCustody). Use it with `signingRequests.get(...)` to fetch the Legs/canonicalHash to sign locally, then `signingRequests.submitSignedTransaction(...)` per Leg. Null only if the Transfer failed before a SigningRequest could be created. */
+  signingRequestId: string | null;
+  createdAt: string;
+  confirmedAt: string | null;
+  failureReason: string | null;
+}
+
+export function mapTransferResponse(raw: unknown): TransferResponse {
+  return {
+    transferId: stringFieldOrNull(raw, 'transferId')!,
+    organizationId: stringFieldOrNull(raw, 'organizationId')!,
+    applicationId: stringFieldOrNull(raw, 'applicationId')!,
+    environmentId: stringFieldOrNull(raw, 'environmentId')!,
+    sourceAccountId: stringFieldOrNull(raw, 'sourceAccountId')!,
+    assetNetworkId: stringFieldOrNull(raw, 'assetNetworkId')!,
+    amount: stringFieldOrNull(raw, 'amount')!,
+    destinationAddress: stringFieldOrNull(raw, 'destinationAddress')!,
+    destinationAccountId: stringFieldOrNull(raw, 'destinationAccountId'),
+    platformFeeAmount: stringFieldOrNull(raw, 'platformFeeAmount')!,
+    platformFeePercentage: stringFieldOrNull(raw, 'platformFeePercentage')!,
+    status: TransferStatus.fromRaw(Number(field(raw, 'status'))),
+    signingRequestId: stringFieldOrNull(raw, 'signingRequestId'),
+    createdAt: stringFieldOrNull(raw, 'createdAt')!,
+    confirmedAt: stringFieldOrNull(raw, 'confirmedAt'),
+    failureReason: stringFieldOrNull(raw, 'failureReason'),
   };
 }
